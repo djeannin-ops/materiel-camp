@@ -209,11 +209,7 @@ textarea { resize: vertical; min-height: 60px; }
     <div class="card-header"><h2>Réservations en cours</h2></div>
     <table>
       <thead><tr><th>Camp</th><th>Directeur</th><th>Matériel</th><th>Départ</th><th>Retour</th><th>Statut</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Alpes Août</strong></td><td>Marie D.</td><td><span class="tl-tag">D8</span> <span class="tl-tag">D9</span> <span class="tl-tag" style="font-family:inherit">5× tentes 3p</span></td><td>02/08</td><td>16/08</td><td><span class="badge badge-ok">Validé</span></td></tr>
-        <tr><td><strong>Bretagne Juillet</strong></td><td>Théo M.</td><td><span class="tl-tag">C17</span> <span class="tl-tag">B3</span></td><td>15/07</td><td>28/07</td><td><span class="badge badge-ok">Validé</span></td></tr>
-        <tr><td><strong>Ardèche Sept.</strong></td><td>Julie F.</td><td><span class="tl-tag">D12</span> <span class="tl-tag">D15</span> <span class="tl-tag">D10</span></td><td>05/09</td><td>12/09</td><td><span class="badge badge-warn">En attente</span></td></tr>
-      </tbody>
+      <tbody id="reservations-tbody"><tr><td colspan="6" style="text-align:center;padding:20px;color:#7a9a80;font-size:13px">Aucune réservation pour le moment.</td></tr></tbody>
     </table>
   </div>
 </div>
@@ -221,16 +217,12 @@ textarea { resize: vertical; min-height: 60px; }
 <!-- RETOURS -->
 <div id="retours" class="page">
   <div class="page-header"><div class="page-header-text"><h1>Retours &amp; état du matériel</h1><p>Fiche à remplir au retour de camp</p></div></div>
-  <div class="card">
-    <div class="card-header"><h2>Retour — Camp Alpes Août · Marie D.</h2><button class="btn btn-primary btn-sm" onclick="showSuccess('successRetour')">Valider le retour</button></div>
-    <div class="section-label">Caisses parties</div>
-    <div class="retour-item">
-      <div class="retour-name"><span class="ref-badge">D8</span> &nbsp;Caisse D8 — Sport 1</div>
-      <div class="retour-meta">Partie le 02/08 — chasubles, ballons, brassards…</div>
-      <div class="retour-fields">
-        <div class="retour-field"><label>État global</label><select><option>✅ Complète, bon état</option><option>⚠️ Incomplète</option><option>🔧 À réparer</option><option>❌ Hors service</option></select></div>
-        <div class="retour-field" style="flex:3"><label>Ce qui manque ou est cassé</label><input type="text" placeholder="ex : 2 chasubles manquantes…"></div>
-      </div>
+      <div class="card">
+    <div class="card-header"><h2>Retours à traiter</h2></div>
+    <div id="retours-liste" style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">
+      Aucun retour en attente. Les retours apparaîtront ici une fois les réservations validées.
+    </div>
+  </div>
     </div>
     <div class="retour-item">
       <div class="retour-name"><span class="ref-badge">D9</span> &nbsp;Caisse D9 — Sport 1 bis</div>
@@ -260,11 +252,8 @@ textarea { resize: vertical; min-height: 60px; }
   <div class="page-header"><div class="page-header-text"><h1>Historique des mouvements</h1><p>Tous les départs, retours et signalements</p></div></div>
   <div class="card">
     <div class="card-header"><h2>Derniers mouvements</h2></div>
-    <div class="timeline">
-      <div class="tl-item"><div class="tl-dot out"></div><div><div class="tl-title">📦 Départ — Camp Alpes Août · Marie D.</div><div class="tl-sub">2 août 2026</div><div class="tl-tags"><span class="tl-tag">D8</span><span class="tl-tag">D9</span><span class="tl-tag" style="font-family:inherit">5× tentes 3p</span></div></div></div>
-      <div class="tl-item"><div class="tl-dot in"></div><div><div class="tl-title">✅ Retour — Camp Bretagne Juillet · Théo M.</div><div class="tl-sub">29 juillet 2026</div><div class="tl-tags"><span class="tl-tag">C17</span><span class="tl-tag">B3</span></div></div></div>
-      <div class="tl-item"><div class="tl-dot issue"></div><div><div class="tl-title">⚠️ Signalement — Caisse B1 Couvertures</div><div class="tl-sub">Quantité à vérifier et recenser · responsable matériel · juin 2026</div></div></div>
-      <div class="tl-item"><div class="tl-dot out"></div><div><div class="tl-title">📦 Départ — Camp Bretagne Juillet · Théo M.</div><div class="tl-sub">15 juillet 2026</div><div class="tl-tags"><span class="tl-tag">C17</span><span class="tl-tag">B3</span><span class="tl-tag" style="font-family:inherit">3× tentes 4p</span></div></div></div>
+    <div class="timeline" id="historique-timeline">
+      <div style="text-align:center;padding:20px;color:#7a9a80;font-size:13px">Aucun mouvement enregistré pour le moment.</div>
     </div>
   </div>
 </div>
@@ -373,7 +362,7 @@ async function loadReservations() {
     const res = await fetch(SCRIPT_URL + '?action=getReservations');
     const data = await res.json();
     if (!data.reservations) return;
-    const tbody = document.querySelector('#reservations table tbody');
+    const tbody = document.getElementById('reservations-tbody');
     if (!tbody) return;
     tbody.innerHTML = data.reservations.map(r => `
       <tr>
