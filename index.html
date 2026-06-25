@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MatéCamp – Inventaire 2026</title>
+<title>GDJV – Inventaire 2026</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F0F4F1; color: #1a2e1e; min-height: 100vh; }
@@ -54,6 +54,10 @@ tr.item-row.selected td:first-child { border-left: 3px solid #4CAF6F; }
 .badge-res { background: #dce8fd; color: #1a3a8a; }
 .badge-caisse { background: #f0eef8; color: #5a3a8a; }
 .badge-article { background: #e8f4fd; color: #1a5a8a; }
+.badge-conflit { background: #fde8c0; color: #8a5500; }
+tr.item-row.conflit td { background: #fffbf0; }
+tr.item-row.conflit td:first-child { border-left: 3px solid #E8A020; }
+.conflit-tag { font-size: 11px; color: #8a5500; font-weight: 700; margin-left: 6px; }
 .qty-cell { display: flex; align-items: center; gap: 0; }
 .qty-btn { width: 24px; height: 24px; border: 1.5px solid #c3d8c7; background: #fff; color: #1F4E2C; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; line-height: 1; }
 .qty-btn:first-child { border-radius: 6px 0 0 6px; }
@@ -122,7 +126,7 @@ textarea { resize: vertical; min-height: 60px; }
 </head>
 <body>
 <nav>
-  <div class="nav-logo">🏕️ MatéCamp <span>2026</span></div>
+  <div class="nav-logo">🏕️ GDJV <span>2026</span></div>
   <div class="nav-tab active" onclick="showPage('inventaire',this)">Inventaire</div>
   <div class="nav-tab" onclick="showPage('reservations',this)">Réservations</div>
   <div class="nav-tab" onclick="showPage('retours',this)">Retours &amp; État</div>
@@ -180,11 +184,23 @@ textarea { resize: vertical; min-height: 60px; }
   <div class="card">
     <div class="card-header"><h2>Nouvelle réservation</h2></div>
     <div class="form-grid">
-      <div class="form-group"><label>Nom du camp</label><input type="text" placeholder="ex : Séjour Ardèche Juillet"></div>
-      <div class="form-group"><label>Directeur responsable</label><input type="text" placeholder="Prénom Nom"></div>
-      <div class="form-group"><label>Date de départ</label><input type="date"></div>
-      <div class="form-group"><label>Date de retour</label><input type="date"></div>
-      <div class="form-group full"><label>Notes</label><textarea placeholder="Vérifications souhaitées, demandes particulières…"></textarea></div>
+      <div class="form-group"><label>Nom du camp</label><input type="text" id="res-camp" placeholder="ex : Séjour Ardèche Juillet"></div>
+      <div class="form-group"><label>Directeur responsable</label><input type="text" id="res-directeur" placeholder="Prénom Nom"></div>
+      <div class="form-group">
+        <label>Date de départ</label>
+        <input type="date" id="res-depart" onchange="onDatesChange()">
+      </div>
+      <div class="form-group">
+        <label>Date de retour</label>
+        <input type="date" id="res-retour" onchange="onDatesChange()">
+      </div>
+      <div class="form-group full" id="dispo-banner" style="display:none">
+        <div style="background:#fff8e8;border:1.5px solid #f5d58a;border-radius:8px;padding:10px 14px;font-size:13px;color:#7a5500">
+          ⚠️ <strong>Certains articles sont déjà réservés sur ces dates.</strong>
+          Ils apparaissent en orange dans l'inventaire ci-dessous. Vous pouvez quand même les ajouter — le responsable matériel tranchera à la validation.
+        </div>
+      </div>
+      <div class="form-group full"><label>Notes</label><textarea id="res-notes" placeholder="Vérifications souhaitées, demandes particulières…"></textarea></div>
     </div>
     <div id="recap-selection" style="display:none">
       <div class="selection-recap">
@@ -363,6 +379,50 @@ function etatBadge(e) {
   return '';
 }
 
+// Références déjà réservées sur les dates sélectionnées
+let conflits = new Set();
+
+function onDatesChange() {
+  const depart = document.getElementById('res-depart').value;
+  const retour = document.getElementById('res-retour').value;
+  if (!depart || !retour) {
+    conflits = new Set();
+    document.getElementById('dispo-banner').style.display = 'none';
+    renderTable(filteredItems());
+    return;
+  }
+  checkConflits(depart, retour);
+}
+
+async function checkConflits(depart, retour) {
+  conflits = new Set();
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=getReservations');
+    const data = await res.json();
+    if (!data.reservations) { renderTable(filteredItems()); return; }
+
+    const d1 = new Date(depart);
+    const d2 = new Date(retour);
+
+    data.reservations.forEach(r => {
+      if (r['Statut'] === 'Refusé') return;
+      const rd1 = new Date(r['Dates départ']);
+      const rd2 = new Date(r['Date retour']);
+      // Chevauchement si les périodes se croisent
+      if (d1 <= rd2 && d2 >= rd1) {
+        try {
+          const materiel = JSON.parse(r['Matériel']);
+          materiel.forEach(m => conflits.add(m.ref));
+        } catch(e) {}
+      }
+    });
+  } catch(e) {}
+
+  const banner = document.getElementById('dispo-banner');
+  banner.style.display = conflits.size > 0 ? 'block' : 'none';
+  renderTable(filteredItems());
+}
+
 function renderTable(data) {
   const tbody = document.getElementById('inventaire-body');
   tbody.innerHTML = '';
@@ -378,7 +438,9 @@ function renderTable(data) {
       ? '<span class="badge badge-caisse">📦 Caisse</span>'
       : '<span class="badge badge-article">🔹 Article</span>';
     const catLabel = CAT_LABELS[item.cat]||item.cat;
+    const isConflit = conflits.has(item.ref);
     const dispoStr = item.type==='caisse' ? '1 unité' : (item.dispo!=null ? `${item.dispo}/${item.total}` : '?');
+    const conflitTag = isConflit ? '<span class="conflit-tag">⚠️ Pris sur ces dates</span>' : '';
     const qtyCell = !disabled ? `<div class="qty-cell">
       <button class="qty-btn" onclick="adjustQty('${item.ref}',-1)" ${curQ<=1?'disabled':''}>−</button>
       <input class="qty-val" type="number" id="qty-${item.ref}" value="${curQ}" min="1" max="${maxQ}" onchange="setQty('${item.ref}',this.value)">
@@ -386,7 +448,8 @@ function renderTable(data) {
       <span class="qty-max">/ ${maxQ}</span></div>`
       : '<span style="font-size:11px;color:#b0a090">—</span>';
     const tr = document.createElement('tr');
-    tr.className = 'item-row' + (isSel?' selected':'');
+    const isConflit = conflits.has(item.ref);
+    tr.className = 'item-row' + (isSel?' selected':'') + (isConflit?' conflit':'');
     tr.dataset.ref = item.ref.toLowerCase();
     tr.innerHTML = `
       <td><input type="checkbox" class="row-check" ${isSel?'checked':''} ${disabled?'disabled':''} onchange="toggleItem('${item.ref}',this)"></td>
@@ -394,7 +457,7 @@ function renderTable(data) {
       <td><span class="item-name">${item.emoji} ${item.nom}</span></td>
       <td>${typeBadge}</td>
       <td style="font-size:12px;color:#557a5e">${catLabel}</td>
-      <td>${disabled?'<span style="color:#c07060;font-size:12px">Indisponible</span>':dispoStr}</td>
+      <td>${disabled?'<span style="color:#c07060;font-size:12px">Indisponible</span>':dispoStr+conflitTag}</td>
       <td>${etatBadge(item.etat)}</td>
       <td>${qtyCell}</td>
       <td>${contenuCell}</td>`;
@@ -491,6 +554,10 @@ function goToReservation() {
     document.getElementById('recap-empty').style.display='block';
   }
   showPage('reservations',null);
+  // Re-vérifier les conflits si dates déjà remplies
+  const d = document.getElementById('res-depart');
+  const r = document.getElementById('res-retour');
+  if(d && r && d.value && r.value) checkConflits(d.value, r.value);
   document.querySelectorAll('.nav-tab').forEach((t,i)=>{t.classList.toggle('active',i===1);});
 }
 
