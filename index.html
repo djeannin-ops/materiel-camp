@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MatéCamp – Inventaire 2026</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F0F4F1; color: #1a2e1e; min-height: 100vh; }
+nav { background: #1F4E2C; padding: 0 24px; display: flex; align-items: center; height: 52px; gap: 0; }
+.nav-logo { color: #fff; font-weight: 700; font-size: 15px; margin-right: 32px; display: flex; align-items: center; gap: 8px; }
+.nav-logo span { background: #4CAF6F; color: #fff; border-radius: 6px; padding: 2px 7px; font-size: 11px; font-weight: 800; letter-spacing: 1px; }
+.nav-tab { color: #a8c9b0; font-size: 14px; padding: 0 16px; height: 52px; display: flex; align-items: center; cursor: pointer; border-bottom: 3px solid transparent; transition: all .15s; user-select: none; }
+.nav-tab:hover { color: #fff; }
+.nav-tab.active { color: #fff; border-bottom-color: #4CAF6F; }
+main { max-width: 1100px; margin: 0 auto; padding: 28px 20px 80px; }
+.page { display: none; }
+.page.active { display: block; }
+.page-header { margin-bottom: 20px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.page-header-text h1 { font-size: 22px; font-weight: 700; color: #1F4E2C; }
+.page-header-text p { color: #557a5e; font-size: 14px; margin-top: 4px; }
+.stats { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+.stat-card { background: #fff; border-radius: 10px; padding: 13px 16px; flex: 1; min-width: 110px; border-left: 4px solid #4CAF6F; }
+.stat-card.warn { border-left-color: #E8A020; }
+.stat-card.alert { border-left-color: #D94F3D; }
+.stat-card .num { font-size: 24px; font-weight: 800; color: #1F4E2C; line-height: 1; }
+.stat-card .lbl { font-size: 11px; color: #7a9a80; margin-top: 3px; }
+.card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.07); margin-bottom: 20px; }
+.card-header { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e8f0ea; }
+.card-header h2 { font-size: 15px; font-weight: 700; }
+.btn { padding: 7px 16px; border-radius: 7px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; }
+.btn-primary { background: #1F4E2C; color: #fff; }
+.btn-primary:hover { background: #2a6b3c; }
+.btn-sm { padding: 5px 11px; font-size: 12px; border-radius: 6px; }
+.btn-outline { background: transparent; border: 1.5px solid #c3d8c7; color: #1F4E2C; }
+.btn-outline:hover { background: #edf5ef; }
+.toolbar { padding: 12px 20px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #e8f0ea; flex-wrap: wrap; }
+.search-input { flex: 1; min-width: 180px; border: 1.5px solid #c3d8c7; border-radius: 7px; padding: 7px 12px; font-size: 14px; font-family: inherit; color: #1a2e1e; background: #f8fdf9; outline: none; }
+.search-input:focus { border-color: #4CAF6F; background: #fff; }
+.filter-chip { padding: 4px 11px; border-radius: 20px; border: 1.5px solid #c3d8c7; background: #fff; font-size: 12px; font-weight: 600; color: #557a5e; cursor: pointer; transition: all .15s; white-space: nowrap; }
+.filter-chip:hover, .filter-chip.active { background: #1F4E2C; color: #fff; border-color: #1F4E2C; }
+table { width: 100%; border-collapse: collapse; }
+th { background: #f5f9f6; font-size: 11px; font-weight: 700; color: #7a9a80; text-transform: uppercase; letter-spacing: .5px; padding: 9px 12px; text-align: left; white-space: nowrap; }
+td { padding: 9px 12px; font-size: 13px; border-top: 1px solid #f0f5f1; vertical-align: middle; }
+tr.item-row:hover td { background: #fafcfa; }
+tr.item-row.selected td { background: #f0f8f2; }
+tr.item-row.selected td:first-child { border-left: 3px solid #4CAF6F; }
+.ref-badge { display: inline-block; font-size: 11px; font-weight: 800; color: #5a7a60; background: #e8f0ea; padding: 2px 7px; border-radius: 5px; letter-spacing: .3px; font-family: monospace; white-space: nowrap; }
+.item-name { font-weight: 600; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.badge-ok { background: #d4f0dc; color: #1a6b2f; }
+.badge-warn { background: #fde8c0; color: #8a5500; }
+.badge-alert { background: #fdd8d4; color: #8a1a10; }
+.badge-res { background: #dce8fd; color: #1a3a8a; }
+.badge-caisse { background: #f0eef8; color: #5a3a8a; }
+.badge-article { background: #e8f4fd; color: #1a5a8a; }
+.qty-cell { display: flex; align-items: center; gap: 0; }
+.qty-btn { width: 24px; height: 24px; border: 1.5px solid #c3d8c7; background: #fff; color: #1F4E2C; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; line-height: 1; }
+.qty-btn:first-child { border-radius: 6px 0 0 6px; }
+.qty-btn:last-child { border-radius: 0 6px 6px 0; }
+.qty-btn:hover:not(:disabled) { background: #edf5ef; }
+.qty-btn:disabled { opacity: .3; cursor: default; }
+.qty-val { width: 34px; height: 24px; border: 1.5px solid #c3d8c7; border-left: none; border-right: none; text-align: center; font-size: 12px; font-weight: 700; color: #1a2e1e; background: #fff; outline: none; }
+.qty-max { font-size: 11px; color: #a0b8a4; margin-left: 6px; white-space: nowrap; }
+.row-check { width: 15px; height: 15px; cursor: pointer; accent-color: #1F4E2C; }
+.contenu-btn { background: none; border: 1.5px solid #d0d8f5; color: #4a6aba; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; cursor: pointer; white-space: nowrap; }
+.contenu-btn:hover { background: #eef1fd; }
+.panier-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #1F4E2C; color: #fff; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; transform: translateY(100%); transition: transform .25s cubic-bezier(.4,0,.2,1); z-index: 50; box-shadow: 0 -4px 20px rgba(0,0,0,.2); }
+.panier-bar.visible { transform: translateY(0); }
+.panier-count { font-weight: 800; font-size: 16px; }
+.panier-detail { color: #a8c9b0; font-size: 12px; margin-top: 1px; }
+.panier-actions { display: flex; gap: 10px; align-items: center; }
+.panier-clear { background: none; border: 1.5px solid #4a7a5a; color: #a8c9b0; font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 7px; cursor: pointer; }
+.panier-clear:hover { border-color: #7aaa8a; color: #fff; }
+.panier-btn { background: #4CAF6F; color: #fff; border: none; font-size: 14px; font-weight: 700; padding: 8px 20px; border-radius: 8px; cursor: pointer; }
+.panier-btn:hover { background: #3d9d5e; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 20px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.full { grid-column: 1 / -1; }
+label { font-size: 12px; font-weight: 700; color: #557a5e; text-transform: uppercase; letter-spacing: .4px; }
+input, select, textarea { border: 1.5px solid #c3d8c7; border-radius: 7px; padding: 8px 12px; font-size: 14px; font-family: inherit; color: #1a2e1e; background: #f8fdf9; transition: border .15s; outline: none; }
+input:focus, select:focus, textarea:focus { border-color: #4CAF6F; background: #fff; }
+textarea { resize: vertical; min-height: 60px; }
+.form-actions { padding: 0 20px 20px; display: flex; gap: 10px; }
+.selection-recap { margin: 0 20px 16px; border: 1.5px solid #c3d8c7; border-radius: 8px; overflow: hidden; }
+.selection-recap-header { background: #f5f9f6; padding: 8px 14px; font-size: 12px; font-weight: 700; color: #557a5e; text-transform: uppercase; letter-spacing: .4px; }
+.selection-recap-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; border-top: 1px solid #e8f0ea; font-size: 13px; }
+.selection-recap-item .ref { font-family: monospace; font-size: 11px; background: #e8f0ea; color: #5a7a60; padding: 1px 6px; border-radius: 4px; margin-right: 8px; font-weight: 700; }
+.selection-recap-item .qty-tag { background: #d4f0dc; color: #1a6b2f; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+.section-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .8px; color: #7a9a80; padding: 8px 20px 6px; background: #f5f9f6; border-bottom: 1px solid #e8f0ea; border-top: 1px solid #e8f0ea; }
+.retour-item { padding: 13px 20px; border-top: 1px solid #f0f5f1; }
+.retour-name { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+.retour-meta { font-size: 12px; color: #7a9a80; margin-bottom: 10px; }
+.retour-fields { display: flex; gap: 10px; flex-wrap: wrap; }
+.retour-field { display: flex; flex-direction: column; gap: 4px; min-width: 110px; flex: 1; }
+.timeline { padding: 20px; }
+.tl-item { display: flex; gap: 14px; margin-bottom: 18px; }
+.tl-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.tl-dot.out { background: #4CAF6F; }
+.tl-dot.in { background: #3a8fd4; }
+.tl-dot.issue { background: #D94F3D; }
+.tl-title { font-size: 14px; font-weight: 600; }
+.tl-sub { font-size: 12px; color: #7a9a80; margin-top: 2px; }
+.tl-tags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.tl-tag { font-size: 11px; background: #e8f0ea; color: #3a6b44; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-family: monospace; }
+.success-banner { background: #d4f0dc; color: #1a6b2f; padding: 12px 20px; font-size: 14px; font-weight: 600; display: none; }
+.success-banner.show { display: block; }
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 100; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: #fff; border-radius: 14px; max-width: 480px; width: 95%; box-shadow: 0 8px 40px rgba(0,0,0,.2); overflow: hidden; max-height: 88vh; display: flex; flex-direction: column; }
+.modal-header { padding: 16px 20px 12px; border-bottom: 1px solid #e8f0ea; display: flex; justify-content: space-between; align-items: flex-start; flex-shrink: 0; background: #fff; }
+.modal-header h3 { font-size: 16px; font-weight: 700; }
+.modal-sub { font-size: 12px; color: #7a9a80; margin-top: 3px; }
+.modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #7a9a80; }
+.modal-body { overflow-y: auto; flex: 1; padding: 16px 20px; }
+.modal-footer { padding: 12px 20px; border-top: 1px solid #e8f0ea; display: flex; gap: 10px; flex-shrink: 0; }
+.contenu-list { list-style: none; }
+.contenu-list li { padding: 7px 0; border-bottom: 1px solid #f0f5f1; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.contenu-list li:last-child { border-bottom: none; }
+.contenu-dot { width: 6px; height: 6px; border-radius: 50%; background: #4CAF6F; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">🏕️ MatéCamp <span>2026</span></div>
+  <div class="nav-tab active" onclick="showPage('inventaire',this)">Inventaire</div>
+  <div class="nav-tab" onclick="showPage('reservations',this)">Réservations</div>
+  <div class="nav-tab" onclick="showPage('retours',this)">Retours &amp; État</div>
+  <div class="nav-tab" onclick="showPage('historique',this)">Historique</div>
+</nav>
+<main>
+
+<!-- INVENTAIRE -->
+<div id="inventaire" class="page active">
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Inventaire du matériel</h1>
+      <p>Cochez les articles, ajustez les quantités, puis réservez en bas de page</p>
+    </div>
+    <button class="btn btn-primary btn-sm">+ Ajouter un article</button>
+  </div>
+  <div class="stats" id="stats-bar"></div>
+  <div class="card">
+    <div class="toolbar">
+      <input class="search-input" type="text" placeholder="🔍 Rechercher par nom ou référence…" oninput="filterTable(this.value)">
+      <div class="filter-chip active" onclick="filterCat('',this)">Tout</div>
+      <div class="filter-chip" onclick="filterCat('tentes',this)">⛺ Tentes</div>
+      <div class="filter-chip" onclick="filterCat('cuisine',this)">🍽️ Cuisine</div>
+      <div class="filter-chip" onclick="filterCat('sport',this)">⚽ Sport</div>
+      <div class="filter-chip" onclick="filterCat('bureau',this)">✏️ Bureautique</div>
+      <div class="filter-chip" onclick="filterCat('camping',this)">🏕️ Camping</div>
+      <div class="filter-chip" onclick="filterCat('loisirs',this)">🎭 Loisirs</div>
+      <div class="filter-chip" onclick="filterCat('linge',this)">🧺 Linge</div>
+      <div class="filter-chip" onclick="filterCat('mobilier',this)">🪑 Mobilier</div>
+      <div class="filter-chip" onclick="filterCat('divers',this)">🔌 Divers</div>
+      <div class="filter-chip" onclick="filterCat('hygiene',this)">🧴 Hygiène</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:28px"><input type="checkbox" class="row-check" id="check-all" onchange="toggleAll(this)"></th>
+          <th>Référence</th>
+          <th>Désignation</th>
+          <th>Type</th>
+          <th>Catégorie</th>
+          <th>Disponible</th>
+          <th>État</th>
+          <th>Quantité</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="inventaire-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- RESERVATIONS -->
+<div id="reservations" class="page">
+  <div class="page-header"><div class="page-header-text"><h1>Réservations</h1><p>Complétez les informations pour finaliser la demande</p></div></div>
+  <div class="card">
+    <div class="card-header"><h2>Nouvelle réservation</h2></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Nom du camp</label><input type="text" placeholder="ex : Séjour Ardèche Juillet"></div>
+      <div class="form-group"><label>Directeur responsable</label><input type="text" placeholder="Prénom Nom"></div>
+      <div class="form-group"><label>Date de départ</label><input type="date"></div>
+      <div class="form-group"><label>Date de retour</label><input type="date"></div>
+      <div class="form-group full"><label>Notes</label><textarea placeholder="Vérifications souhaitées, demandes particulières…"></textarea></div>
+    </div>
+    <div id="recap-selection" style="display:none">
+      <div class="selection-recap">
+        <div class="selection-recap-header">Matériel sélectionné</div>
+        <div id="recap-items"></div>
+      </div>
+    </div>
+    <div id="recap-empty" style="padding:0 20px 16px;font-size:13px;color:#7a9a80">Aucun article sélectionné — retournez dans l'inventaire pour sélectionner du matériel.</div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="showSuccess('successRes')">Envoyer la demande</button>
+      <button class="btn btn-outline" onclick="showPage('inventaire',null)">← Modifier la sélection</button>
+    </div>
+    <div id="successRes" class="success-banner">✅ Demande envoyée ! Le responsable matériel va valider la réservation.</div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h2>Réservations en cours</h2></div>
+    <table>
+      <thead><tr><th>Camp</th><th>Directeur</th><th>Matériel</th><th>Départ</th><th>Retour</th><th>Statut</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Alpes Août</strong></td><td>Marie D.</td><td><span class="tl-tag">D8</span> <span class="tl-tag">D9</span> <span class="tl-tag" style="font-family:inherit">5× tentes 3p</span></td><td>02/08</td><td>16/08</td><td><span class="badge badge-ok">Validé</span></td></tr>
+        <tr><td><strong>Bretagne Juillet</strong></td><td>Théo M.</td><td><span class="tl-tag">C17</span> <span class="tl-tag">B3</span></td><td>15/07</td><td>28/07</td><td><span class="badge badge-ok">Validé</span></td></tr>
+        <tr><td><strong>Ardèche Sept.</strong></td><td>Julie F.</td><td><span class="tl-tag">D12</span> <span class="tl-tag">D15</span> <span class="tl-tag">D10</span></td><td>05/09</td><td>12/09</td><td><span class="badge badge-warn">En attente</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- RETOURS -->
+<div id="retours" class="page">
+  <div class="page-header"><div class="page-header-text"><h1>Retours &amp; état du matériel</h1><p>Fiche à remplir au retour de camp</p></div></div>
+  <div class="card">
+    <div class="card-header"><h2>Retour — Camp Alpes Août · Marie D.</h2><button class="btn btn-primary btn-sm" onclick="showSuccess('successRetour')">Valider le retour</button></div>
+    <div class="section-label">Caisses parties</div>
+    <div class="retour-item">
+      <div class="retour-name"><span class="ref-badge">D8</span> &nbsp;Caisse D8 — Sport 1</div>
+      <div class="retour-meta">Partie le 02/08 — chasubles, ballons, brassards…</div>
+      <div class="retour-fields">
+        <div class="retour-field"><label>État global</label><select><option>✅ Complète, bon état</option><option>⚠️ Incomplète</option><option>🔧 À réparer</option><option>❌ Hors service</option></select></div>
+        <div class="retour-field" style="flex:3"><label>Ce qui manque ou est cassé</label><input type="text" placeholder="ex : 2 chasubles manquantes…"></div>
+      </div>
+    </div>
+    <div class="retour-item">
+      <div class="retour-name"><span class="ref-badge">D9</span> &nbsp;Caisse D9 — Sport 1 bis</div>
+      <div class="retour-meta">Partie le 02/08 — chasubles, ballons, brassards…</div>
+      <div class="retour-fields">
+        <div class="retour-field"><label>État global</label><select><option selected>✅ Complète, bon état</option><option>⚠️ Incomplète</option><option>🔧 À réparer</option><option>❌ Hors service</option></select></div>
+        <div class="retour-field" style="flex:3"><label>Ce qui manque ou est cassé</label><input type="text" placeholder="Aucune remarque…"></div>
+      </div>
+    </div>
+    <div class="section-label">Articles isolés partis</div>
+    <div class="retour-item">
+      <div class="retour-fields">
+        <div class="retour-field"><label>Référence</label><input type="text" value="G2-01"></div>
+        <div class="retour-field"><label>Article</label><input type="text" value="Tentes 2s (3 places)"></div>
+        <div class="retour-field"><label>Qté partie</label><input type="number" value="5"></div>
+        <div class="retour-field"><label>Qté retournée</label><input type="number" value="5"></div>
+        <div class="retour-field"><label>État</label><select><option>✅ Bon</option><option selected>⚠️ Usure</option><option>❌ HS</option></select></div>
+        <div class="retour-field" style="flex:2"><label>Observations</label><input type="text" value="Arceaux d'une tente à vérifier"></div>
+      </div>
+    </div>
+    <div id="successRetour" class="success-banner">✅ Retour enregistré ! Inventaire mis à jour, signalements transmis.</div>
+  </div>
+</div>
+
+<!-- HISTORIQUE -->
+<div id="historique" class="page">
+  <div class="page-header"><div class="page-header-text"><h1>Historique des mouvements</h1><p>Tous les départs, retours et signalements</p></div></div>
+  <div class="card">
+    <div class="card-header"><h2>Derniers mouvements</h2></div>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-dot out"></div><div><div class="tl-title">📦 Départ — Camp Alpes Août · Marie D.</div><div class="tl-sub">2 août 2026</div><div class="tl-tags"><span class="tl-tag">D8</span><span class="tl-tag">D9</span><span class="tl-tag" style="font-family:inherit">5× tentes 3p</span></div></div></div>
+      <div class="tl-item"><div class="tl-dot in"></div><div><div class="tl-title">✅ Retour — Camp Bretagne Juillet · Théo M.</div><div class="tl-sub">29 juillet 2026</div><div class="tl-tags"><span class="tl-tag">C17</span><span class="tl-tag">B3</span></div></div></div>
+      <div class="tl-item"><div class="tl-dot issue"></div><div><div class="tl-title">⚠️ Signalement — Caisse B1 Couvertures</div><div class="tl-sub">Quantité à vérifier et recenser · responsable matériel · juin 2026</div></div></div>
+      <div class="tl-item"><div class="tl-dot out"></div><div><div class="tl-title">📦 Départ — Camp Bretagne Juillet · Théo M.</div><div class="tl-sub">15 juillet 2026</div><div class="tl-tags"><span class="tl-tag">C17</span><span class="tl-tag">B3</span><span class="tl-tag" style="font-family:inherit">3× tentes 4p</span></div></div></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<div class="panier-bar" id="panier-bar">
+  <div>
+    <div><span class="panier-count" id="panier-count">0</span> <span id="panier-label">article sélectionné</span></div>
+    <div class="panier-detail" id="panier-detail"></div>
+  </div>
+  <div class="panier-actions">
+    <button class="panier-clear" onclick="clearSelection()">Tout désélectionner</button>
+    <button class="panier-btn" onclick="goToReservation()">Réserver cette sélection →</button>
+  </div>
+</div>
+
+<div id="contenuModal" class="modal-overlay" onclick="if(event.target===this)closeContenu()">
+  <div class="modal">
+    <div class="modal-header">
+      <div><h3 id="cm-title"></h3><div class="modal-sub" id="cm-sub"></div></div>
+      <button class="modal-close" onclick="closeContenu()">✕</button>
+    </div>
+    <div class="modal-body"><ul class="contenu-list" id="cm-list"></ul></div>
+    <div class="modal-footer"><button class="btn btn-primary" onclick="closeContenu()">Fermer</button></div>
+  </div>
+</div>
+
+<script>
+const CAT_LABELS = {tentes:'Tentes',cuisine:'Cuisine',sport:'Sport',bureau:'Bureautique',camping:'Camping',loisirs:'Loisirs',linge:'Linge',mobilier:'Mobilier',divers:'Divers',hygiene:'Hygiène'};
+const items = [{"ref":"A1-01","nom":"Tables plastique","cat":"mobilier","type":"article","emoji":"🪑","dispo":14,"total":14,"etat":"ok","contenu":null},{"ref":"A1-02","nom":"Table métal (plancha)","cat":"mobilier","type":"article","emoji":"🪑","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"A1-03","nom":"Nappes","cat":"mobilier","type":"article","emoji":"🧺","dispo":null,"total":null,"etat":"warn","contenu":null},{"ref":"A2-01","nom":"Bancs bois","cat":"mobilier","type":"article","emoji":"🪑","dispo":18,"total":18,"etat":"ok","contenu":null},{"ref":"A2-02","nom":"Chaises camping pliantes","cat":"mobilier","type":"article","emoji":"🪑","dispo":12,"total":12,"etat":"ok","contenu":null},{"ref":"A3-01","nom":"Plancha (77×75cm)","cat":"cuisine","type":"article","emoji":"🍳","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"A3-02","nom":"Grille barbecue 40×70cm","cat":"cuisine","type":"article","emoji":"🔥","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G-01","nom":"Frigos","cat":"cuisine","type":"article","emoji":"🧊","dispo":3,"total":3,"etat":"ok","contenu":null},{"ref":"G-02","nom":"Évier cuisine","cat":"cuisine","type":"article","emoji":"🚿","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G-03","nom":"Tuyau arrosage (60m)","cat":"divers","type":"article","emoji":"🌊","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"B1","nom":"Caisse B1 — Couvertures","cat":"camping","type":"caisse","emoji":"🛏️","dispo":1,"total":1,"etat":"warn","contenu":["Couvertures (quantité à vérifier)"]},{"ref":"B2","nom":"Caisse B2 — Gaz","cat":"camping","type":"caisse","emoji":"🔥","dispo":1,"total":1,"etat":"ok","contenu":["Bouteilles gaz Camping Gaz × 6","Bouteilles mini réchauds type 206/200 × 4","Bouteilles gaz Cube × 3","Détendeur + Tuyau × 4"]},{"ref":"B3","nom":"Caisse B3 — Réchauds","cat":"cuisine","type":"caisse","emoji":"🍳","dispo":1,"total":1,"etat":"ok","contenu":["Réchauds mini-cartouches × 2","Grand réchauds CampingGaz × 2","Réchauds 2 plaques CampingGaz × 1","Plaque induction autonome × 2","Très grand bruleur gaz (paella) × 1","Grand bruleur gaz × 2"]},{"ref":"B4","nom":"Caisse B4 — Électricité","cat":"divers","type":"caisse","emoji":"🔌","dispo":1,"total":1,"etat":"ok","contenu":["Rallonges électrique 20m orange × 2","Rallonges électrique 10m blanche × 3","Rallonges électrique 40m orange × 2","Crochet pour projecteur × 3","Multiprise avec fil × 4","Multiprise sans fil × 4","Raccord borne camping × 3","Projecteur LED × 3"]},{"ref":"C1-01","nom":"Glaciaire 1","cat":"cuisine","type":"article","emoji":"🧊","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"C1-02","nom":"Glaciaire 2","cat":"cuisine","type":"article","emoji":"🧊","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"C12-01","nom":"Grande Glaciaire","cat":"cuisine","type":"article","emoji":"🧊","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"C2","nom":"Caisse C2 — Service pain & eau","cat":"cuisine","type":"caisse","emoji":"🍞","dispo":1,"total":1,"etat":"ok","contenu":["Panières à pain × 15","Pots à eau × 12"]},{"ref":"C3","nom":"Caisse C3 — Gourdes & Jerricans","cat":"camping","type":"caisse","emoji":"🫙","dispo":1,"total":1,"etat":"ok","contenu":["Gourdes × 6","Grand jerrican × 1","Petits jerricans × 3"]},{"ref":"C5","nom":"Caisse C5 — Café","cat":"cuisine","type":"caisse","emoji":"☕","dispo":1,"total":1,"etat":"ok","contenu":["Cafetière filtre × 1","Bouilloires × 2","Filtres à café"]},{"ref":"C6","nom":"Caisse C6 — Saladiers Camping","cat":"cuisine","type":"caisse","emoji":"🥗","dispo":1,"total":1,"etat":"ok","contenu":["Big saladiers × 2","Grands saladiers × 2","Moyens saladiers × 4","Petits saladiers × 4","Saladiers jetables × 6","Planches à découper × 6"]},{"ref":"C7","nom":"Caisse C7 — Lot 2 Cuisson","cat":"cuisine","type":"caisse","emoji":"🍲","dispo":1,"total":1,"etat":"ok","contenu":["Grande marmite × 1","Cuit vapeur × 1","Poêle + Couvercle × 1","Casserole + Couvercle + Poignée × 1"]},{"ref":"C8","nom":"Caisse C8 — Lot 1 Cuisson","cat":"cuisine","type":"caisse","emoji":"🍲","dispo":1,"total":1,"etat":"ok","contenu":["Grande marmite × 1","Cocotte Minute × 1","Casserole moyenne + couvercle × 1"]},{"ref":"C9","nom":"Caisse C9 — Poêles","cat":"cuisine","type":"caisse","emoji":"🍳","dispo":1,"total":1,"etat":"ok","contenu":["Poêles à crêpes × 2","Poêle inox × 1","Poêles tefal × 3","Couvercles × 2","Poignée × 1","Maniques × 4"]},{"ref":"C10","nom":"Caisse C10 — Passoires & Plats","cat":"cuisine","type":"caisse","emoji":"🥣","dispo":1,"total":1,"etat":"ok","contenu":["Essoreuses salade × 2","Passoires × 2","Plats de service × 4","Petite passoire × 1"]},{"ref":"C14","nom":"Caisse C14 — Vaisselle Itinérant","cat":"cuisine","type":"caisse","emoji":"🍽️","dispo":1,"total":1,"etat":"ok","contenu":["Assiettes × 41","Bols × 41","Verres × 41"]},{"ref":"C17","nom":"Caisse C17 — Vaisselle Tour Camping","cat":"cuisine","type":"caisse","emoji":"🍽️","dispo":1,"total":1,"etat":"ok","contenu":["Couverts × 50","Assiettes × 45","Bols × 45","Verres × 45"]},{"ref":"D5-01","nom":"Mégaphone","cat":"loisirs","type":"article","emoji":"📣","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"D7","nom":"Caisse D7 — Tir à l'arc","cat":"loisirs","type":"caisse","emoji":"🏹","dispo":1,"total":1,"etat":"ok","contenu":["Arc de tir × 1","Flèches × 3"]},{"ref":"D8","nom":"Caisse D8 — Sport 1","cat":"sport","type":"caisse","emoji":"⚽","dispo":1,"total":1,"etat":"ok","contenu":["Chasubles 1 couleur × 15","Ballon foot × 1","Ballon volley × 1","Brassards / bandeaux × 2 lots","Diverses petites balles","Jeu de Stratégo (non vérifié)"]},{"ref":"D9","nom":"Caisse D9 — Sport 1 bis","cat":"sport","type":"caisse","emoji":"⚽","dispo":1,"total":1,"etat":"ok","contenu":["Chasubles 1 couleur × 15","Ballon foot × 1","Ballon volley × 1","Brassards / bandeaux × 2 lots","Diverses petites balles","Jeu de Stratégo (non vérifié)"]},{"ref":"D10","nom":"Caisse D10 — Sport 2","cat":"sport","type":"caisse","emoji":"🏸","dispo":1,"total":1,"etat":"ok","contenu":["Cônes grands × 6","Raquettes PP × 6","Frisbee × 1","Volant × 1","Molky × 1","Diabolo × 1"]},{"ref":"D11","nom":"Caisse D11 — Sport 2 bis","cat":"sport","type":"caisse","emoji":"🏸","dispo":1,"total":1,"etat":"ok","contenu":["Cônes petits × 1 lot","Raquettes PP × 6","Frisbee × 1","Volant × 1","Molky × 1","Diabolo × 1"]},{"ref":"D12","nom":"Caisse D12 — Bureautique Petits","cat":"bureau","type":"caisse","emoji":"✏️","dispo":1,"total":1,"etat":"ok","contenu":["Boite stylos et crayons papier × 1","Boite feutres × 1","Boite marqueurs × 1","Boite marqueurs textiles × 1","Boite divers (scotch, colle, ciseaux, craies…) × 1","Règles × 1 petit lot","Feuilles couleurs, blanches, divers textures × 1 lot"]},{"ref":"D13","nom":"Caisse D13 — Peinture Petits","cat":"bureau","type":"caisse","emoji":"🎨","dispo":1,"total":1,"etat":"ok","contenu":["Peinture × 1 lot","Pinceaux × 1 bon lot"]},{"ref":"D15","nom":"Caisse D15 — Bureautique Ados","cat":"bureau","type":"caisse","emoji":"✏️","dispo":1,"total":1,"etat":"ok","contenu":["Boite stylos et crayons papier × 1","Boite feutres × 1","Boite marqueurs × 1","Boite marqueurs textiles × 1","Boite divers × 1","Règles × 1 petit lot","Petit lot peinture × 1","Cutter × 1","Feuilles couleurs, blanches, divers textures × 1 lot"]},{"ref":"D16","nom":"Caisse D16 — Bureautique Jeunes","cat":"bureau","type":"caisse","emoji":"✏️","dispo":1,"total":1,"etat":"ok","contenu":["Boite stylos et crayons papier × 1","Boite feutres × 1","Boite marqueurs × 1","Boite marqueurs textiles × 1","Boite divers × 1","Règles × 1 petit lot","Petit lot peinture × 1","Cutter × 1","Feuilles couleurs, blanches, divers textures × 1 lot"]},{"ref":"D14-01","nom":"Plastifieuse","cat":"bureau","type":"article","emoji":"🖨️","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"D18-01","nom":"Vidéo projecteur","cat":"loisirs","type":"article","emoji":"📽️","dispo":1,"total":1,"etat":"warn","contenu":null},{"ref":"E1-01","nom":"Duvet toile","cat":"camping","type":"article","emoji":"🛌","dispo":4,"total":4,"etat":"ok","contenu":null},{"ref":"E1-02","nom":"Duvet 10°","cat":"camping","type":"article","emoji":"🛌","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"E1-03","nom":"Duvet 20°","cat":"camping","type":"article","emoji":"🛌","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"E7","nom":"Caisse E7 — Linge Gîte","cat":"linge","type":"caisse","emoji":"🧺","dispo":1,"total":1,"etat":"ok","contenu":["Torchons vaisselle × 70"]},{"ref":"E8","nom":"Caisse E8 — Linge Camping","cat":"linge","type":"caisse","emoji":"🧺","dispo":1,"total":1,"etat":"ok","contenu":["Tabliers × 10","Toques × 10","Torchons mains × 43"]},{"ref":"E9","nom":"Caisse E9 — Torchons Camping","cat":"linge","type":"caisse","emoji":"🧺","dispo":1,"total":1,"etat":"ok","contenu":["Torchons vaisselle × 70"]},{"ref":"E10","nom":"Caisse E10 — Linge Gîte complet","cat":"linge","type":"caisse","emoji":"🧺","dispo":1,"total":1,"etat":"ok","contenu":["Tabliers × 10","Toques × 10","Torchons mains × 40","Tabliers ménage × 7","Tabliers plonge × 2"]},{"ref":"F1-01","nom":"Matelas mousse","cat":"camping","type":"article","emoji":"🛏️","dispo":4,"total":4,"etat":"ok","contenu":null},{"ref":"F1-02","nom":"Matelas gonflables","cat":"camping","type":"article","emoji":"🛏️","dispo":3,"total":3,"etat":"ok","contenu":null},{"ref":"F3-01","nom":"Tente 2s noire (3 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"F3-02","nom":"Tente 2s light (3 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G2-01","nom":"Tentes 2s (3 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":5,"total":5,"etat":"ok","contenu":null},{"ref":"G3-01","nom":"Tente Arpenaz Family 4 (4 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G4-01","nom":"Tente Arpenaz Family 4 (4 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G5-01","nom":"Tente Arpenaz Family 4.1 (4 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G6-01","nom":"Tente Arpenaz Family 4.1 (4 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G7-01","nom":"Tente matos","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G8-01","nom":"Tente T4.2 dome (6 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G9-01","nom":"Tente Arpenaz 4.2 F&B (6 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G10-01","nom":"Tente Arpenaz 4.2 (6 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G11-01","nom":"Tente 8 places","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G12-01","nom":"Tente 6 places","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},,{"ref":"D1","nom":"Caisse D1 — Déguisements Médiéval","cat":"loisirs","type":"caisse","emoji":"🏰","dispo":1,"total":1,"etat":"ok","contenu":["Costumes médiévaux (contenu à détailler)"]},{"ref":"D2","nom":"Caisse D2 — Déguisements Romains","cat":"loisirs","type":"caisse","emoji":"🏛️","dispo":1,"total":1,"etat":"ok","contenu":["Obélix & époque romaine (contenu à détailler)"]},{"ref":"D3","nom":"Caisse D3 — Accessoires Déguisements","cat":"loisirs","type":"caisse","emoji":"🎭","dispo":1,"total":1,"etat":"ok","contenu":["Chapeaux divers","Lunettes","Nœuds papillon","Accessoires cowboy (contenu à détailler)"]},{"ref":"D4","nom":"Caisse D4 — Déguisements Hippie & Tutus","cat":"loisirs","type":"caisse","emoji":"🎭","dispo":1,"total":1,"etat":"ok","contenu":["Hippie × 2","Grands tutus × 2","Diverses perruques (contenu à détailler)"]},{"ref":"E11","nom":"Caisse E11 — Hygiène Gîte","cat":"hygiene","type":"caisse","emoji":"🧴","dispo":1,"total":1,"etat":"ok","contenu":["Consommables hygiène pour le Gîte (contenu à détailler)"]},{"ref":"E12","nom":"Caisse E12 — Hygiène Gîte (2)","cat":"hygiene","type":"caisse","emoji":"🧴","dispo":1,"total":1,"etat":"ok","contenu":["Consommables hygiène pour le Gîte (contenu à détailler)"]},{"ref":"E13","nom":"Caisse E13 — Hygiène Camping","cat":"hygiene","type":"caisse","emoji":"🧴","dispo":1,"total":1,"etat":"ok","contenu":["Consommables hygiène pour le Camping (contenu à détailler)"]},{"ref":"GX-01","nom":"Barnum","cat":"camping","type":"article","emoji":"🎪","dispo":1,"total":1,"etat":"ok","contenu":null}];
+
+const selection = {};
+let currentCatFilter = '', currentSearch = '';
+
+function etatBadge(e) {
+  if(e==='ok') return '<span class="badge badge-ok">Bon état</span>';
+  if(e==='warn') return '<span class="badge badge-warn">⚠️ À vérifier</span>';
+  if(e==='alert') return '<span class="badge badge-alert">❌ Alerte</span>';
+  if(e==='res') return '<span class="badge badge-res">Réservé</span>';
+  return '';
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('inventaire-body');
+  tbody.innerHTML = '';
+  data.forEach(item => {
+    const isSel = !!selection[item.ref];
+    const maxQ = item.type==='caisse' ? 1 : (item.dispo||0);
+    const curQ = selection[item.ref] || 1;
+    const disabled = !item.dispo || item.dispo===0;
+    const contenuCell = item.type==='caisse'
+      ? `<button class="contenu-btn" onclick="openContenu('${item.ref}')">📋 Contenu</button>`
+      : '—';
+    const typeBadge = item.type==='caisse'
+      ? '<span class="badge badge-caisse">📦 Caisse</span>'
+      : '<span class="badge badge-article">🔹 Article</span>';
+    const catLabel = CAT_LABELS[item.cat]||item.cat;
+    const dispoStr = item.type==='caisse' ? '1 unité' : (item.dispo!=null ? `${item.dispo}/${item.total}` : '?');
+    const qtyCell = !disabled ? `<div class="qty-cell">
+      <button class="qty-btn" onclick="adjustQty('${item.ref}',-1)" ${curQ<=1?'disabled':''}>−</button>
+      <input class="qty-val" type="number" id="qty-${item.ref}" value="${curQ}" min="1" max="${maxQ}" onchange="setQty('${item.ref}',this.value)">
+      <button class="qty-btn" onclick="adjustQty('${item.ref}',1)" ${curQ>=maxQ?'disabled':''}>+</button>
+      <span class="qty-max">/ ${maxQ}</span></div>`
+      : '<span style="font-size:11px;color:#b0a090">—</span>';
+    const tr = document.createElement('tr');
+    tr.className = 'item-row' + (isSel?' selected':'');
+    tr.dataset.ref = item.ref.toLowerCase();
+    tr.innerHTML = `
+      <td><input type="checkbox" class="row-check" ${isSel?'checked':''} ${disabled?'disabled':''} onchange="toggleItem('${item.ref}',this)"></td>
+      <td><span class="ref-badge">${item.ref}</span></td>
+      <td><span class="item-name">${item.emoji} ${item.nom}</span></td>
+      <td>${typeBadge}</td>
+      <td style="font-size:12px;color:#557a5e">${catLabel}</td>
+      <td>${disabled?'<span style="color:#c07060;font-size:12px">Indisponible</span>':dispoStr}</td>
+      <td>${etatBadge(item.etat)}</td>
+      <td>${qtyCell}</td>
+      <td>${contenuCell}</td>`;
+    tbody.appendChild(tr);
+  });
+  renderStats(data);
+}
+
+function renderStats(data) {
+  const total = items.length;
+  const dispo = items.filter(i=>i.etat==='ok'&&i.dispo!==0).length;
+  const warn = items.filter(i=>i.etat==='warn').length;
+  const alert = items.filter(i=>i.etat==='alert').length;
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat-card"><div class="num">${total}</div><div class="lbl">Références totales</div></div>
+    <div class="stat-card"><div class="num">${dispo}</div><div class="lbl">Disponibles</div></div>
+    <div class="stat-card warn"><div class="num">${warn}</div><div class="lbl">À vérifier</div></div>
+    <div class="stat-card alert"><div class="num">${alert}</div><div class="lbl">Alertes</div></div>`;
+}
+
+function toggleItem(ref, cb) {
+  const item = items.find(i=>i.ref===ref);
+  if(cb.checked) { selection[ref]=item.type==='caisse'?1:parseInt(document.getElementById('qty-'+ref)?.value||1); }
+  else { delete selection[ref]; }
+  cb.closest('tr').classList.toggle('selected', cb.checked);
+  updatePanier();
+}
+
+function adjustQty(ref, delta) {
+  const item = items.find(i=>i.ref===ref);
+  const inp = document.getElementById('qty-'+ref);
+  let v = parseInt(inp.value)+delta;
+  v = Math.max(1, Math.min(item.dispo, v));
+  inp.value = v;
+  if(selection[ref]!==undefined){selection[ref]=v;updatePanier();}
+  const btns = inp.closest('.qty-cell').querySelectorAll('.qty-btn');
+  btns[0].disabled = v<=1; btns[1].disabled = v>=item.dispo;
+}
+
+function setQty(ref, val) {
+  const item = items.find(i=>i.ref===ref);
+  val = Math.max(1, Math.min(item.dispo||1, parseInt(val)||1));
+  document.getElementById('qty-'+ref).value = val;
+  if(selection[ref]!==undefined){selection[ref]=val;updatePanier();}
+}
+
+function toggleAll(cb) {
+  document.querySelectorAll('#inventaire-body tr').forEach(tr => {
+    const rc = tr.querySelector('.row-check');
+    if(!rc||rc.disabled) return;
+    rc.checked = cb.checked;
+    const ref = rc.getAttribute('onchange').match(/'([^']+)'/)[1];
+    const item = items.find(i=>i.ref===ref);
+    if(cb.checked){selection[ref]=item.type==='caisse'?1:(item.dispo||1);}
+    else{delete selection[ref];}
+    tr.classList.toggle('selected', cb.checked);
+  });
+  updatePanier();
+}
+
+function updatePanier() {
+  const keys = Object.keys(selection);
+  const bar = document.getElementById('panier-bar');
+  if(!keys.length){bar.classList.remove('visible');return;}
+  bar.classList.add('visible');
+  document.getElementById('panier-count').textContent = keys.length;
+  document.getElementById('panier-label').textContent = keys.length>1?' articles sélectionnés':' article sélectionné';
+  document.getElementById('panier-detail').textContent = keys.map(r=>{
+    const it=items.find(i=>i.ref===r);
+    return it.type==='caisse'?r:r+'×'+selection[r];
+  }).join(' · ');
+}
+
+function clearSelection() {
+  Object.keys(selection).forEach(k=>delete selection[k]);
+  renderTable(filteredItems());
+  document.getElementById('check-all').checked=false;
+  updatePanier();
+}
+
+function goToReservation() {
+  const keys = Object.keys(selection);
+  const ri = document.getElementById('recap-items');
+  if(keys.length){
+    document.getElementById('recap-selection').style.display='block';
+    document.getElementById('recap-empty').style.display='none';
+    ri.innerHTML = keys.map(r=>{
+      const it=items.find(i=>i.ref===r);
+      const qt=it.type==='caisse'?'1 caisse entière':selection[r]+' unité'+(selection[r]>1?'s':'');
+      return `<div class="selection-recap-item"><span><span class="ref">${r}</span>${it.emoji} ${it.nom}</span><span class="qty-tag">${qt}</span></div>`;
+    }).join('');
+  } else {
+    document.getElementById('recap-selection').style.display='none';
+    document.getElementById('recap-empty').style.display='block';
+  }
+  showPage('reservations',null);
+  document.querySelectorAll('.nav-tab').forEach((t,i)=>{t.classList.toggle('active',i===1);});
+}
+
+function filteredItems() {
+  return items.filter(i=>{
+    const cm = !currentCatFilter||i.cat===currentCatFilter;
+    const sm = !currentSearch||i.nom.toLowerCase().includes(currentSearch)||i.ref.toLowerCase().includes(currentSearch);
+    return cm&&sm;
+  });
+}
+function filterCat(cat,chip){
+  currentCatFilter=cat;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  renderTable(filteredItems());
+}
+function filterTable(val){currentSearch=val.toLowerCase();renderTable(filteredItems());}
+
+function openContenu(ref){
+  const it=items.find(i=>i.ref===ref);
+  document.getElementById('cm-title').textContent=it.nom;
+  document.getElementById('cm-sub').textContent=it.ref+' · Contenu référencé';
+  document.getElementById('cm-list').innerHTML=it.contenu.map(c=>`<li><span class="contenu-dot"></span>${c}</li>`).join('');
+  document.getElementById('contenuModal').classList.add('open');
+}
+function closeContenu(){document.getElementById('contenuModal').classList.remove('open');}
+
+function showPage(id,tab){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(tab)tab.classList.add('active');
+}
+function showSuccess(id){
+  const el=document.getElementById(id);
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),4000);
+}
+
+renderTable(items);
+</script>
+</body>
+</html>
