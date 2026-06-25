@@ -128,7 +128,8 @@ tr.item-row.selected td:first-child { border-left: 3px solid #4CAF6F; }
   <div class="nav-logo">🏕️ MatéCamp <span>2026</span></div>
   <div class="nav-tab active" onclick="showPage('inventaire',this)">Inventaire</div>
   <div class="nav-tab" onclick="showPage('reservations',this)">Réservations</div>
-  <div class="nav-tab" onclick="showPage('retours',this)">Retours &amp; État</div>
+  <div class="nav-tab" onclick="showPage('departs',this)">Départs</div>
+  <div class="nav-tab" onclick="showPage('retours',this)">Retours</div>
   <div class="nav-tab" onclick="showPage('historique',this)">Historique</div>
 </nav>
 
@@ -226,6 +227,13 @@ tr.item-row.selected td:first-child { border-left: 3px solid #4CAF6F; }
   </div>
 </div>
 
+<div id="departs" class="page">
+  <div class="page-header"><div><h1>Départs</h1><p>Cochez le matériel vérifié et chargé pour chaque camp</p></div></div>
+  <div id="departs-container">
+    <div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">⏳ Chargement…</div>
+  </div>
+</div>
+
 <div id="retours" class="page">
   <div class="page-header"><div><h1>Retours &amp; état du matériel</h1><p>Fiche à remplir au retour de camp</p></div></div>
   <div class="card">
@@ -262,15 +270,7 @@ tr.item-row.selected td:first-child { border-left: 3px solid #4CAF6F; }
 <div id="contenuModal" class="modal-overlay" onclick="if(event.target===this)closeContenu()">
   <div class="modal">
     <div class="modal-header">
-      <div><h3 id="cm-title"></h3><div class="modal-sub" id="cm-sub"></div></div>
-      <button class="modal-close" onclick="closeContenu()">✕</button>
-    </div>
-    <div class="modal-body"><ul class="contenu-list" id="cm-list"></ul></div>
-    <div class="modal-footer"><button class="btn btn-primary" onclick="closeContenu()">Fermer</button></div>
-  </div>
-</div>
-
-<script>
+      <d<script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWQRuW2W-nmNfc4B2U5ok1e15O3WgB-ejfxdy7QDU-67cfU4i9UbeB57z9VEgRMHz_Hg/exec';
 const CAT_REVERSE = {Tentes:'tentes',Cuisine:'cuisine',Sport:'sport',Bureautique:'bureau',Camping:'camping',Loisirs:'loisirs',Linge:'linge',Mobilier:'mobilier',Divers:'divers','Hygiène':'hygiene'};
 const CAT_LABELS = {tentes:'Tentes',cuisine:'Cuisine',sport:'Sport',bureau:'Bureautique',camping:'Camping',loisirs:'Loisirs',linge:'Linge',mobilier:'Mobilier',divers:'Divers',hygiene:'Hygiène'};
@@ -312,7 +312,14 @@ async function loadInventaire() {
   } catch(e) {
     itemsData = ITEMS_LOCAL;
   }
-  renderTable();
+  // Si des dates sont déjà saisies, calculer les dispos
+  const dep = document.getElementById('cb-depart').value;
+  const ret = document.getElementById('cb-retour').value;
+  if (dep && ret) {
+    onDatesChange();
+  } else {
+    renderTable();
+  }
 }
 
 // ── BARRE DATES ───────────────────────────────────────────────
@@ -715,6 +722,8 @@ function showPage(id, tab) {
   document.getElementById(id).classList.add('active');
   if (tab) tab.classList.add('active');
   if (id === 'reservations') loadReservations();
+  if (id === 'departs') loadDeparts();
+  if (id === 'retours') loadRetours();
 }
 function showSuccess(id) {
   const el = document.getElementById(id);
@@ -722,6 +731,8 @@ function showSuccess(id) {
   setTimeout(() => el.classList.remove('show'), 4000);
 }
 
+// ── INIT ──────────────────────────────────────────────────────
+loadInventaire();
 // ── INIT ──────────────────────────────────────────────────────
 loadInventaire();
 </script>
