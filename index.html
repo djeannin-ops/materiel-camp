@@ -976,26 +976,6 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('btn-modif-cancel').addEventListener('click', function() { document.getElementById('mo-modif').classList.remove('open'); });
   document.getElementById('btn-modif-save').addEventListener('click', sauvegarderModif);
   document.getElementById('mo-modif').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
-});
-</script>earSelection);
-  document.getElementById('pan-btn').addEventListener('click', goToReservation);
-  document.getElementById('btn-envoyer').addEventListener('click', envoyerReservation);
-  document.getElementById('btn-modif').addEventListener('click', function() { showPage('inventaire'); });
-  document.getElementById('mo-cls').addEventListener('click', function() { document.getElementById('mo-contenu').classList.remove('open'); });
-  document.getElementById('mo-ok').addEventListener('click', function() { document.getElementById('mo-contenu').classList.remove('open'); });
-  document.getElementById('mo-contenu').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
-  document.getElementById('cb-depart').addEventListener('change', onDatesChange);
-  document.getElementById('cb-retour').addEventListener('change', onDatesChange);
-  document.querySelectorAll('.chip').forEach(function(chip) {
-    chip.addEventListener('click', function() {
-      document.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('active'); });
-      chip.classList.add('active');
-      catFilter = chip.dataset.cat;
-      renderTable();
-    });
-  });
-  loadInventaire();
-});
-</script>
+});</script>
 </body>
 </html>
