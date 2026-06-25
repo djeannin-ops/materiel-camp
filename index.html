@@ -3,144 +3,168 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MatéCamp – Inventaire 2026</title>
+<title>MatéCamp 2026</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F0F4F1; color: #1a2e1e; min-height: 100vh; }
-nav { background: #1F4E2C; padding: 0 24px; display: flex; align-items: center; height: 52px; gap: 0; position: sticky; top: 0; z-index: 50; }
-.nav-logo { color: #fff; font-weight: 700; font-size: 15px; margin-right: 32px; display: flex; align-items: center; gap: 8px; }
-.nav-logo span { background: #4CAF6F; color: #fff; border-radius: 6px; padding: 2px 7px; font-size: 11px; font-weight: 800; }
-.nav-tab { color: #a8c9b0; font-size: 14px; padding: 0 16px; height: 52px; display: flex; align-items: center; cursor: pointer; border-bottom: 3px solid transparent; transition: all .15s; user-select: none; }
-.nav-tab:hover { color: #fff; }
-.nav-tab.active { color: #fff; border-bottom-color: #4CAF6F; }
-.camp-bar { background: #fff; border-bottom: 2px solid #e8f0ea; padding: 0 24px; height: 50px; display: flex; align-items: center; gap: 12px; position: sticky; top: 52px; z-index: 40; box-shadow: 0 2px 6px rgba(0,0,0,.06); flex-wrap: nowrap; overflow-x: auto; }
-.cb-label { font-size: 12px; font-weight: 700; color: #7a9a80; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; }
-.cb-sep { width: 1px; height: 22px; background: #e0eae2; flex-shrink: 0; }
-.camp-bar input[type="text"] { border: 1.5px solid #c3d8c7; border-radius: 7px; padding: 5px 10px; font-size: 13px; font-family: inherit; color: #1a2e1e; background: #f8fdf9; outline: none; width: 150px; }
-.camp-bar input[type="date"] { border: 1.5px solid #c3d8c7; border-radius: 7px; padding: 5px 8px; font-size: 13px; font-family: inherit; color: #1a2e1e; background: #f8fdf9; outline: none; }
-.camp-bar input:focus { border-color: #4CAF6F; background: #fff; }
-.cb-status { font-size: 12px; color: #a0b8a4; white-space: nowrap; }
-.cb-status.ok { color: #1a6b2f; font-weight: 700; }
-.cb-status.warn { color: #8a5500; font-weight: 700; }
-main { max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px; }
-.page { display: none; }
-.page.active { display: block; }
-.page-header { margin-bottom: 20px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.page-header h1 { font-size: 22px; font-weight: 700; color: #1F4E2C; }
-.page-header p { color: #557a5e; font-size: 14px; margin-top: 4px; }
-.stats { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-.stat-card { background: #fff; border-radius: 10px; padding: 13px 16px; flex: 1; min-width: 110px; border-left: 4px solid #4CAF6F; }
-.stat-card.warn { border-left-color: #E8A020; }
-.stat-card.alert { border-left-color: #D94F3D; }
-.stat-card .num { font-size: 24px; font-weight: 800; color: #1F4E2C; line-height: 1; }
-.stat-card .lbl { font-size: 11px; color: #7a9a80; margin-top: 3px; }
-.card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.07); margin-bottom: 20px; }
-.card-header { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e8f0ea; }
-.card-header h2 { font-size: 15px; font-weight: 700; }
-.btn { padding: 7px 16px; border-radius: 7px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; }
-.btn-primary { background: #1F4E2C; color: #fff; }
-.btn-primary:hover { background: #2a6b3c; }
-.btn-sm { padding: 5px 11px; font-size: 12px; border-radius: 6px; }
-.btn-outline { background: transparent; border: 1.5px solid #c3d8c7; color: #1F4E2C; }
-.btn-outline:hover { background: #edf5ef; }
-.toolbar { padding: 12px 20px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #e8f0ea; flex-wrap: wrap; }
-.search-input { flex: 1; min-width: 160px; border: 1.5px solid #c3d8c7; border-radius: 7px; padding: 7px 12px; font-size: 14px; font-family: inherit; outline: none; background: #f8fdf9; }
-.search-input:focus { border-color: #4CAF6F; background: #fff; }
-.filter-chip { padding: 4px 11px; border-radius: 20px; border: 1.5px solid #c3d8c7; background: #fff; font-size: 12px; font-weight: 600; color: #557a5e; cursor: pointer; transition: all .15s; white-space: nowrap; }
-.filter-chip:hover, .filter-chip.active { background: #1F4E2C; color: #fff; border-color: #1F4E2C; }
-table { width: 100%; border-collapse: collapse; }
-th { background: #f5f9f6; font-size: 11px; font-weight: 700; color: #7a9a80; text-transform: uppercase; letter-spacing: .5px; padding: 9px 12px; text-align: left; white-space: nowrap; }
-td { padding: 9px 12px; font-size: 13px; border-top: 1px solid #f0f5f1; vertical-align: middle; }
-tr.item-row:hover td { background: #fafcfa; }
-tr.item-row.selected td { background: #f0f8f2; }
-tr.item-row.selected td:first-child { border-left: 3px solid #4CAF6F; }
-.ref-badge { display: inline-block; font-size: 11px; font-weight: 800; color: #5a7a60; background: #e8f0ea; padding: 2px 7px; border-radius: 5px; font-family: monospace; white-space: nowrap; }
-.item-name { font-weight: 600; }
-.badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-.badge-ok { background: #d4f0dc; color: #1a6b2f; }
-.badge-warn { background: #fde8c0; color: #8a5500; }
-.badge-alert { background: #fdd8d4; color: #8a1a10; }
-.badge-caisse { background: #f0eef8; color: #5a3a8a; }
-.badge-article { background: #e8f4fd; color: #1a5a8a; }
-.qty-cell { display: flex; align-items: center; }
-.qty-btn { width: 24px; height: 24px; border: 1.5px solid #c3d8c7; background: #fff; color: #1F4E2C; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
-.qty-btn:first-child { border-radius: 6px 0 0 6px; }
-.qty-btn:last-child { border-radius: 0 6px 6px 0; }
-.qty-btn:hover:not(:disabled) { background: #edf5ef; }
-.qty-btn:disabled { opacity: .3; cursor: default; }
-.qty-val { width: 34px; height: 24px; border: 1.5px solid #c3d8c7; border-left: none; border-right: none; text-align: center; font-size: 12px; font-weight: 700; color: #1a2e1e; background: #fff; outline: none; }
-.qty-max { font-size: 11px; color: #a0b8a4; margin-left: 6px; white-space: nowrap; }
-.row-check { width: 15px; height: 15px; cursor: pointer; accent-color: #1F4E2C; }
-.contenu-btn { background: none; border: 1.5px solid #d0d8f5; color: #4a6aba; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; cursor: pointer; white-space: nowrap; }
-.contenu-btn:hover { background: #eef1fd; }
-.panier-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #1F4E2C; color: #fff; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; transform: translateY(100%); transition: transform .25s; z-index: 50; box-shadow: 0 -4px 20px rgba(0,0,0,.2); }
-.panier-bar.visible { transform: translateY(0); }
-.panier-count { font-weight: 800; font-size: 16px; }
-.panier-detail { color: #a8c9b0; font-size: 12px; margin-top: 1px; }
-.panier-actions { display: flex; gap: 10px; align-items: center; }
-.panier-clear { background: none; border: 1.5px solid #4a7a5a; color: #a8c9b0; font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 7px; cursor: pointer; }
-.panier-clear:hover { border-color: #7aaa8a; color: #fff; }
-.panier-btn { background: #4CAF6F; color: #fff; border: none; font-size: 14px; font-weight: 700; padding: 8px 20px; border-radius: 8px; cursor: pointer; }
-.panier-btn:hover { background: #3d9d5e; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 20px; }
-.form-group { display: flex; flex-direction: column; gap: 5px; }
-.form-group.full { grid-column: 1 / -1; }
-.form-group label { font-size: 12px; font-weight: 700; color: #557a5e; text-transform: uppercase; letter-spacing: .4px; }
-.form-group input, .form-group select, .form-group textarea { border: 1.5px solid #c3d8c7; border-radius: 7px; padding: 8px 12px; font-size: 14px; font-family: inherit; color: #1a2e1e; background: #f8fdf9; outline: none; width: 100%; }
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #4CAF6F; background: #fff; }
-.form-group textarea { resize: vertical; min-height: 60px; }
-.form-actions { padding: 0 20px 20px; display: flex; gap: 10px; }
-.sel-recap { margin: 0 20px 16px; border: 1.5px solid #c3d8c7; border-radius: 8px; overflow: hidden; }
-.sel-recap-hd { background: #f5f9f6; padding: 8px 14px; font-size: 12px; font-weight: 700; color: #557a5e; text-transform: uppercase; }
-.sel-recap-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; border-top: 1px solid #e8f0ea; font-size: 13px; }
-.sel-recap-row .ref { font-family: monospace; font-size: 11px; background: #e8f0ea; color: #5a7a60; padding: 1px 6px; border-radius: 4px; margin-right: 8px; font-weight: 700; }
-.sel-recap-row .qty-tag { background: #d4f0dc; color: #1a6b2f; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
-.timeline { padding: 20px; }
-.tl-item { display: flex; gap: 14px; margin-bottom: 18px; }
-.tl-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
-.tl-dot.out { background: #4CAF6F; }
-.tl-dot.in { background: #3a8fd4; }
-.tl-dot.issue { background: #D94F3D; }
-.tl-title { font-size: 14px; font-weight: 600; }
-.tl-sub { font-size: 12px; color: #7a9a80; margin-top: 2px; }
-.tl-tags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
-.tl-tag { font-size: 11px; background: #e8f0ea; color: #3a6b44; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-family: monospace; }
-.success-banner { background: #d4f0dc; color: #1a6b2f; padding: 12px 20px; font-size: 14px; font-weight: 600; display: none; }
-.success-banner.show { display: block; }
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 100; align-items: center; justify-content: center; }
-.modal-overlay.open { display: flex; }
-.modal { background: #fff; border-radius: 14px; max-width: 480px; width: 95%; box-shadow: 0 8px 40px rgba(0,0,0,.2); overflow: hidden; max-height: 88vh; display: flex; flex-direction: column; }
-.modal-header { padding: 16px 20px 12px; border-bottom: 1px solid #e8f0ea; display: flex; justify-content: space-between; align-items: flex-start; background: #fff; }
-.modal-header h3 { font-size: 16px; font-weight: 700; }
-.modal-sub { font-size: 12px; color: #7a9a80; margin-top: 3px; }
-.modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #7a9a80; }
-.modal-body { overflow-y: auto; flex: 1; padding: 16px 20px; }
-.modal-footer { padding: 12px 20px; border-top: 1px solid #e8f0ea; display: flex; gap: 10px; }
-.contenu-list { list-style: none; }
-.contenu-list li { padding: 7px 0; border-bottom: 1px solid #f0f5f1; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-.contenu-list li:last-child { border-bottom: none; }
-.contenu-dot { width: 6px; height: 6px; border-radius: 50%; background: #4CAF6F; flex-shrink: 0; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F4F1;color:#1a2e1e;min-height:100vh}
+nav{background:#1F4E2C;padding:0 24px;display:flex;align-items:center;height:52px;position:sticky;top:0;z-index:50}
+.nav-logo{color:#fff;font-weight:700;font-size:15px;margin-right:32px;display:flex;align-items:center;gap:8px}
+.nav-logo span{background:#4CAF6F;color:#fff;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:800}
+.nav-tab{color:#a8c9b0;font-size:14px;padding:0 16px;height:52px;display:flex;align-items:center;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;user-select:none}
+.nav-tab:hover{color:#fff}
+.nav-tab.active{color:#fff;border-bottom-color:#4CAF6F}
+.camp-bar{background:#fff;border-bottom:2px solid #e8f0ea;padding:0 24px;height:50px;display:flex;align-items:center;gap:12px;position:sticky;top:52px;z-index:40;box-shadow:0 2px 6px rgba(0,0,0,.06);overflow-x:auto}
+.cb-label{font-size:12px;font-weight:700;color:#7a9a80;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.cb-sep{width:1px;height:22px;background:#e0eae2;flex-shrink:0}
+.camp-bar input[type=text]{border:1.5px solid #c3d8c7;border-radius:7px;padding:5px 10px;font-size:13px;font-family:inherit;color:#1a2e1e;background:#f8fdf9;outline:none;width:150px}
+.camp-bar input[type=date]{border:1.5px solid #c3d8c7;border-radius:7px;padding:5px 8px;font-size:13px;font-family:inherit;color:#1a2e1e;background:#f8fdf9;outline:none}
+.camp-bar input:focus{border-color:#4CAF6F;background:#fff}
+.cb-status{font-size:12px;color:#a0b8a4;white-space:nowrap}
+.cb-status.ok{color:#1a6b2f;font-weight:700}
+.cb-status.warn{color:#8a5500;font-weight:700}
+main{max-width:1100px;margin:0 auto;padding:24px 20px 80px}
+.page{display:none}
+.page.active{display:block}
+.ph{margin-bottom:20px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ph h1{font-size:22px;font-weight:700;color:#1F4E2C}
+.ph p{color:#557a5e;font-size:14px;margin-top:4px}
+.stats{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.stat{background:#fff;border-radius:10px;padding:13px 16px;flex:1;min-width:110px;border-left:4px solid #4CAF6F}
+.stat.warn{border-left-color:#E8A020}
+.stat.alert{border-left-color:#D94F3D}
+.stat .num{font-size:24px;font-weight:800;color:#1F4E2C;line-height:1}
+.stat .lbl{font-size:11px;color:#7a9a80;margin-top:3px}
+.card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:20px}
+.card-hd{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e8f0ea}
+.card-hd h2{font-size:15px;font-weight:700}
+.btn{padding:7px 16px;border-radius:7px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-p{background:#1F4E2C;color:#fff}
+.btn-p:hover{background:#2a6b3c}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:6px}
+.btn-o{background:transparent;border:1.5px solid #c3d8c7;color:#1F4E2C}
+.btn-o:hover{background:#edf5ef}
+.toolbar{padding:12px 20px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e8f0ea;flex-wrap:wrap}
+.si{flex:1;min-width:160px;border:1.5px solid #c3d8c7;border-radius:7px;padding:7px 12px;font-size:14px;font-family:inherit;outline:none;background:#f8fdf9}
+.si:focus{border-color:#4CAF6F;background:#fff}
+.chip{padding:4px 11px;border-radius:20px;border:1.5px solid #c3d8c7;background:#fff;font-size:12px;font-weight:600;color:#557a5e;cursor:pointer;transition:all .15s;white-space:nowrap}
+.chip:hover,.chip.active{background:#1F4E2C;color:#fff;border-color:#1F4E2C}
+table{width:100%;border-collapse:collapse}
+th{background:#f5f9f6;font-size:11px;font-weight:700;color:#7a9a80;text-transform:uppercase;letter-spacing:.5px;padding:9px 12px;text-align:left;white-space:nowrap}
+td{padding:9px 12px;font-size:13px;border-top:1px solid #f0f5f1;vertical-align:middle}
+tr.ir:hover td{background:#fafcfa}
+tr.ir.sel td{background:#f0f8f2}
+tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
+.ref{display:inline-block;font-size:11px;font-weight:800;color:#5a7a60;background:#e8f0ea;padding:2px 7px;border-radius:5px;font-family:monospace;white-space:nowrap}
+.bdg{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.ok{background:#d4f0dc;color:#1a6b2f}
+.warn{background:#fde8c0;color:#8a5500}
+.alrt{background:#fdd8d4;color:#8a1a10}
+.caisse{background:#f0eef8;color:#5a3a8a}
+.art{background:#e8f4fd;color:#1a5a8a}
+.qty-cell{display:flex;align-items:center}
+.qb{width:24px;height:24px;border:1.5px solid #c3d8c7;background:#fff;color:#1F4E2C;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.qb:first-child{border-radius:6px 0 0 6px}
+.qb:last-child{border-radius:0 6px 6px 0}
+.qb:hover:not(:disabled){background:#edf5ef}
+.qb:disabled{opacity:.3;cursor:default}
+.qv{width:34px;height:24px;border:1.5px solid #c3d8c7;border-left:none;border-right:none;text-align:center;font-size:12px;font-weight:700;color:#1a2e1e;background:#fff;outline:none}
+.qmax{font-size:11px;color:#a0b8a4;margin-left:6px;white-space:nowrap}
+.rc{width:15px;height:15px;cursor:pointer;accent-color:#1F4E2C}
+.cb-btn{background:none;border:1.5px solid #d0d8f5;color:#4a6aba;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;cursor:pointer;white-space:nowrap}
+.cb-btn:hover{background:#eef1fd}
+.panier{position:fixed;bottom:0;left:0;right:0;background:#1F4E2C;color:#fff;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;transform:translateY(100%);transition:transform .25s;z-index:50;box-shadow:0 -4px 20px rgba(0,0,0,.2)}
+.panier.vis{transform:translateY(0)}
+.pan-cnt{font-weight:800;font-size:16px}
+.pan-det{color:#a8c9b0;font-size:12px;margin-top:1px}
+.pan-acts{display:flex;gap:10px;align-items:center}
+.pan-clr{background:none;border:1.5px solid #4a7a5a;color:#a8c9b0;font-size:13px;font-weight:600;padding:6px 14px;border-radius:7px;cursor:pointer}
+.pan-clr:hover{border-color:#7aaa8a;color:#fff}
+.pan-btn{background:#4CAF6F;color:#fff;border:none;font-size:14px;font-weight:700;padding:8px 20px;border-radius:8px;cursor:pointer}
+.pan-btn:hover{background:#3d9d5e}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px}
+.fg .g{display:flex;flex-direction:column;gap:5px}
+.fg .g.full{grid-column:1/-1}
+.fg .g label{font-size:12px;font-weight:700;color:#557a5e;text-transform:uppercase;letter-spacing:.4px}
+.fg .g input,.fg .g select,.fg .g textarea{border:1.5px solid #c3d8c7;border-radius:7px;padding:8px 12px;font-size:14px;font-family:inherit;color:#1a2e1e;background:#f8fdf9;outline:none;width:100%}
+.fg .g input:focus,.fg .g select:focus,.fg .g textarea:focus{border-color:#4CAF6F;background:#fff}
+.fg .g textarea{resize:vertical;min-height:60px}
+.fac{padding:0 20px 20px;display:flex;gap:10px}
+.srec{margin:0 20px 16px;border:1.5px solid #c3d8c7;border-radius:8px;overflow:hidden}
+.srec-hd{background:#f5f9f6;padding:8px 14px;font-size:12px;font-weight:700;color:#557a5e;text-transform:uppercase}
+.srec-row{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:1px solid #e8f0ea;font-size:13px}
+.srec-row .r{font-family:monospace;font-size:11px;background:#e8f0ea;color:#5a7a60;padding:1px 6px;border-radius:4px;margin-right:8px;font-weight:700}
+.srec-row .qt{background:#d4f0dc;color:#1a6b2f;font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px}
+.dc{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:20px;overflow:hidden}
+.dc-hd{padding:14px 20px;background:#f0f8f2;border-bottom:1px solid #d4f0dc;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.dc-ttl{font-size:15px;font-weight:700}
+.dc-meta{font-size:12px;color:#557a5e;margin-top:2px}
+.di{padding:10px 20px;border-top:1px solid #f0f5f1;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .1s}
+.di:hover{background:#fafcfa}
+.di.chk{background:#f0f8f2}
+.di.chk .di-name{text-decoration:line-through;color:#7a9a80}
+.dck{width:18px;height:18px;accent-color:#1F4E2C;flex-shrink:0;cursor:pointer}
+.di-name{font-size:14px;font-weight:600;flex:1}
+.di-meta{font-size:12px;color:#7a9a80}
+.dp{height:4px;background:#e8f0ea}
+.dpb{height:4px;background:#4CAF6F;transition:width .3s}
+.rc-card{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:20px;overflow:hidden}
+.rc-hd{padding:14px 20px;background:#f5f9f6;border-bottom:1px solid #e8f0ea;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.rc-ttl{font-size:15px;font-weight:700}
+.rc-meta{font-size:12px;color:#7a9a80;margin-top:2px}
+.ra{padding:12px 20px;border-top:1px solid #f0f5f1}
+.ra-name{font-weight:600;font-size:14px;margin-bottom:8px}
+.rfs{display:flex;gap:10px;flex-wrap:wrap}
+.rf{display:flex;flex-direction:column;gap:4px;min-width:110px;flex:1}
+.rf label{font-size:11px;font-weight:700;color:#557a5e;text-transform:uppercase;letter-spacing:.4px}
+.rf input,.rf select{border:1.5px solid #c3d8c7;border-radius:7px;padding:6px 10px;font-size:13px;font-family:inherit;color:#1a2e1e;background:#f8fdf9;outline:none;width:100%}
+.rf input:focus,.rf select:focus{border-color:#4CAF6F;background:#fff}
+.sec-lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#7a9a80;padding:6px 20px;background:#f9fbf9;border-top:1px solid #e8f0ea}
+.rc-suc{font-size:13px;color:#1a6b2f;font-weight:600;display:none}
+.rc-suc.show{display:block}
+.tl{padding:20px}
+.tl-item{display:flex;gap:14px;margin-bottom:18px}
+.tl-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.tl-dot.out{background:#4CAF6F}
+.tl-dot.in{background:#3a8fd4}
+.tl-dot.iss{background:#D94F3D}
+.tl-ttl{font-size:14px;font-weight:600}
+.tl-sub{font-size:12px;color:#7a9a80;margin-top:2px}
+.sb{background:#d4f0dc;color:#1a6b2f;padding:12px 20px;font-size:14px;font-weight:600;display:none}
+.sb.show{display:block}
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
+.mo.open{display:flex}
+.modal{background:#fff;border-radius:14px;max-width:480px;width:95%;box-shadow:0 8px 40px rgba(0,0,0,.2);overflow:hidden;max-height:88vh;display:flex;flex-direction:column}
+.mo-hd{padding:16px 20px 12px;border-bottom:1px solid #e8f0ea;display:flex;justify-content:space-between;align-items:flex-start;background:#fff}
+.mo-hd h3{font-size:16px;font-weight:700}
+.mo-sub{font-size:12px;color:#7a9a80;margin-top:3px}
+.mo-cls{background:none;border:none;font-size:20px;cursor:pointer;color:#7a9a80}
+.mo-body{overflow-y:auto;flex:1;padding:16px 20px}
+.mo-ft{padding:12px 20px;border-top:1px solid #e8f0ea;display:flex;gap:10px}
+.cl{list-style:none}
+.cl li{padding:7px 0;border-bottom:1px solid #f0f5f1;font-size:14px;display:flex;align-items:center;gap:8px}
+.cl li:last-child{border-bottom:none}
+.cd{width:6px;height:6px;border-radius:50%;background:#4CAF6F;flex-shrink:0}
 </style>
 </head>
 <body>
 
 <nav>
-  <div class="nav-logo">🏕️ MatéCamp <span>2026</span></div>
-  <div class="nav-tab active" onclick="showPage('inventaire',this)">Inventaire</div>
-  <div class="nav-tab" onclick="showPage('reservations',this)">Réservations</div>
-  <div class="nav-tab" onclick="showPage('departs',this)">Départs</div>
-  <div class="nav-tab" onclick="showPage('retours',this)">Retours</div>
-  <div class="nav-tab" onclick="showPage('historique',this)">Historique</div>
+  <div class="nav-logo">&#127957;&#65039; MatéCamp <span>2026</span></div>
+  <div class="nav-tab active" id="tab-inv">Inventaire</div>
+  <div class="nav-tab" id="tab-res">Réservations</div>
+  <div class="nav-tab" id="tab-dep">Départs</div>
+  <div class="nav-tab" id="tab-ret">Retours</div>
+  <div class="nav-tab" id="tab-his">Historique</div>
 </nav>
 
 <div class="camp-bar">
-  <span class="cb-label">🏕️ Camp</span>
+  <span class="cb-label">&#127957;&#65039; Camp</span>
   <input type="text" id="cb-camp" placeholder="Nom du camp…">
   <div class="cb-sep"></div>
   <span class="cb-label">Départ</span>
-  <input type="date" id="cb-depart" onchange="onDatesChange()">
+  <input type="date" id="cb-depart">
   <span class="cb-label">Retour</span>
-  <input type="date" id="cb-retour" onchange="onDatesChange()">
+  <input type="date" id="cb-retour">
   <div class="cb-sep"></div>
   <span class="cb-status" id="cb-status">Saisissez les dates pour voir les disponibilités</span>
 </div>
@@ -148,162 +172,189 @@ tr.item-row.selected td:first-child { border-left: 3px solid #4CAF6F; }
 <main>
 
 <div id="inventaire" class="page active">
-  <div class="page-header">
-    <div>
-      <h1>Inventaire du matériel</h1>
-      <p>Cochez les articles, ajustez les quantités, puis réservez en bas de page</p>
-    </div>
-    <button class="btn btn-primary btn-sm">+ Ajouter un article</button>
+  <div class="ph">
+    <div><h1>Inventaire du matériel</h1><p>Cochez les articles, ajustez les quantités, puis réservez</p></div>
+    <button class="btn btn-p btn-sm">+ Ajouter</button>
   </div>
   <div class="stats" id="stats-bar"></div>
   <div class="card">
     <div class="toolbar">
-      <input class="search-input" type="text" placeholder="🔍 Rechercher par nom ou référence…" oninput="filterTable(this.value)">
-      <div class="filter-chip active" onclick="filterCat('',this)">Tout</div>
-      <div class="filter-chip" onclick="filterCat('tentes',this)">⛺ Tentes</div>
-      <div class="filter-chip" onclick="filterCat('cuisine',this)">🍽️ Cuisine</div>
-      <div class="filter-chip" onclick="filterCat('sport',this)">⚽ Sport</div>
-      <div class="filter-chip" onclick="filterCat('bureau',this)">✏️ Bureautique</div>
-      <div class="filter-chip" onclick="filterCat('camping',this)">🏕️ Camping</div>
-      <div class="filter-chip" onclick="filterCat('loisirs',this)">🎭 Loisirs</div>
-      <div class="filter-chip" onclick="filterCat('linge',this)">🧺 Linge</div>
-      <div class="filter-chip" onclick="filterCat('mobilier',this)">🪑 Mobilier</div>
-      <div class="filter-chip" onclick="filterCat('divers',this)">🔌 Divers</div>
-      <div class="filter-chip" onclick="filterCat('hygiene',this)">🧴 Hygiène</div>
+      <input class="si" type="text" placeholder="&#128269; Rechercher…" oninput="filterTable(this.value)">
+      <div class="chip active" data-cat="">Tout</div>
+      <div class="chip" data-cat="tentes">&#9978;&#65039; Tentes</div>
+      <div class="chip" data-cat="cuisine">&#127869;&#65039; Cuisine</div>
+      <div class="chip" data-cat="sport">&#9917; Sport</div>
+      <div class="chip" data-cat="bureau">&#9999;&#65039; Bureautique</div>
+      <div class="chip" data-cat="camping">&#127957;&#65039; Camping</div>
+      <div class="chip" data-cat="loisirs">&#127917; Loisirs</div>
+      <div class="chip" data-cat="linge">&#129531; Linge</div>
+      <div class="chip" data-cat="mobilier">&#129681; Mobilier</div>
+      <div class="chip" data-cat="divers">&#128268; Divers</div>
+      <div class="chip" data-cat="hygiene">&#129748; Hygiène</div>
     </div>
     <table>
-      <thead>
-        <tr>
-          <th style="width:28px"><input type="checkbox" class="row-check" id="check-all" onchange="toggleAll(this)"></th>
-          <th>Référence</th>
-          <th>Désignation</th>
-          <th>Type</th>
-          <th>Catégorie</th>
-          <th id="th-dispo">Disponible</th>
-          <th>État</th>
-          <th>Quantité à réserver</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="inventaire-body"></tbody>
+      <thead><tr>
+        <th style="width:28px"><input type="checkbox" class="rc" id="check-all"></th>
+        <th>Référence</th><th>Désignation</th><th>Type</th><th>Catégorie</th>
+        <th id="th-dispo">Disponible</th><th>État</th><th>Quantité</th><th></th>
+      </tr></thead>
+      <tbody id="inv-body"></tbody>
     </table>
   </div>
 </div>
 
 <div id="reservations" class="page">
-  <div class="page-header">
-    <div><h1>Réservations</h1><p>Complétez les informations pour finaliser la demande</p></div>
+  <div class="ph"><div><h1>Réservations</h1><p>Complétez les informations pour finaliser</p></div></div>
+  <div class="card">
+    <div class="card-hd"><h2>Nouvelle réservation</h2></div>
+    <div class="fg">
+      <div class="g"><label>Nom du camp</label><input type="text" id="res-camp" placeholder="ex : Séjour Vercors Juillet"></div>
+      <div class="g"><label>Directeur</label><input type="text" id="res-dir" placeholder="Prénom Nom"></div>
+      <div class="g"><label>Date de départ</label><input type="date" id="res-dep"></div>
+      <div class="g"><label>Date de retour</label><input type="date" id="res-ret"></div>
+      <div class="g full"><label>Notes</label><textarea id="res-notes" placeholder="Demandes particulières…"></textarea></div>
+    </div>
+    <div id="recap-sel" style="display:none">
+      <div class="srec"><div class="srec-hd">Matériel sélectionné</div><div id="recap-items"></div></div>
+    </div>
+    <div id="recap-empty" style="padding:0 20px 16px;font-size:13px;color:#7a9a80">Aucun article sélectionné.</div>
+    <div class="fac">
+      <button class="btn btn-p" id="btn-envoyer">Envoyer la demande</button>
+      <button class="btn btn-o" id="btn-modif">&#8592; Modifier la sélection</button>
+    </div>
+    <div id="sb-res" class="sb">&#10003;&#65039; Demande envoyée !</div>
   </div>
   <div class="card">
-    <div class="card-header"><h2>Nouvelle réservation</h2></div>
-    <div class="form-grid">
-      <div class="form-group"><label>Nom du camp</label><input type="text" id="res-camp" placeholder="ex : Séjour Vercors Juillet"></div>
-      <div class="form-group"><label>Directeur responsable</label><input type="text" id="res-directeur" placeholder="Prénom Nom"></div>
-      <div class="form-group"><label>Date de départ</label><input type="date" id="res-depart"></div>
-      <div class="form-group"><label>Date de retour</label><input type="date" id="res-retour"></div>
-      <div class="form-group full"><label>Notes</label><textarea id="res-notes" placeholder="Vérifications souhaitées, demandes particulières…"></textarea></div>
-    </div>
-    <div id="recap-selection" style="display:none">
-      <div class="sel-recap">
-        <div class="sel-recap-hd">Matériel sélectionné</div>
-        <div id="recap-items"></div>
-      </div>
-    </div>
-    <div id="recap-empty" style="padding:0 20px 16px;font-size:13px;color:#7a9a80">Aucun article sélectionné — retournez dans l'inventaire pour sélectionner du matériel.</div>
-    <div class="form-actions">
-      <button class="btn btn-primary" onclick="envoyerReservation()">Envoyer la demande</button>
-      <button class="btn btn-outline" onclick="showPage('inventaire',null)">← Modifier la sélection</button>
-    </div>
-    <div id="successRes" class="success-banner">✅ Demande envoyée ! Le responsable matériel va valider la réservation.</div>
-  </div>
-  <div class="card">
-    <div class="card-header"><h2>Réservations en cours</h2></div>
+    <div class="card-hd"><h2>Réservations en cours</h2></div>
     <table>
       <thead><tr><th>Camp</th><th>Directeur</th><th>Matériel</th><th>Départ</th><th>Retour</th><th>Statut</th></tr></thead>
-      <tbody id="reservations-tbody">
-        <tr><td colspan="6" style="text-align:center;padding:20px;color:#7a9a80;font-size:13px">Aucune réservation pour le moment.</td></tr>
-      </tbody>
+      <tbody id="res-tbody"><tr><td colspan="6" style="text-align:center;padding:20px;color:#7a9a80;font-size:13px">Aucune réservation.</td></tr></tbody>
     </table>
   </div>
 </div>
 
 <div id="departs" class="page">
-  <div class="page-header"><div><h1>Départs</h1><p>Cochez le matériel vérifié et chargé pour chaque camp</p></div></div>
-  <div id="departs-container">
-    <div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">⏳ Chargement…</div>
-  </div>
+  <div class="ph"><div><h1>Départs</h1><p>Cochez le matériel vérifié et chargé pour chaque camp</p></div></div>
+  <div id="dep-container"><div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">&#9203; Chargement…</div></div>
 </div>
 
 <div id="retours" class="page">
-  <div class="page-header"><div><h1>Retours &amp; état du matériel</h1><p>Fiche à remplir au retour de camp</p></div></div>
-  <div class="card">
-    <div class="card-header"><h2>Retours à traiter</h2></div>
-    <div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">
-      Aucun retour en attente. Les retours apparaîtront ici une fois les réservations validées.
-    </div>
-  </div>
+  <div class="ph"><div><h1>Retours</h1><p>Fiches à remplir au retour de chaque camp</p></div></div>
+  <div id="ret-container"><div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">&#9203; Chargement…</div></div>
 </div>
 
 <div id="historique" class="page">
-  <div class="page-header"><div><h1>Historique des mouvements</h1><p>Tous les départs, retours et signalements</p></div></div>
+  <div class="ph"><div><h1>Historique</h1><p>Tous les mouvements</p></div></div>
   <div class="card">
-    <div class="card-header"><h2>Derniers mouvements</h2></div>
-    <div class="timeline" id="historique-timeline">
-      <div style="text-align:center;padding:20px;color:#7a9a80;font-size:13px">Aucun mouvement enregistré pour le moment.</div>
-    </div>
+    <div class="card-hd"><h2>Derniers mouvements</h2></div>
+    <div class="tl" id="his-tl"><div style="text-align:center;padding:20px;color:#7a9a80;font-size:13px">Aucun mouvement.</div></div>
   </div>
 </div>
 
 </main>
 
-<div class="panier-bar" id="panier-bar">
+<div class="panier" id="panier">
   <div>
-    <div><span class="panier-count" id="panier-count">0</span> <span id="panier-label">article sélectionné</span></div>
-    <div class="panier-detail" id="panier-detail"></div>
+    <div><span class="pan-cnt" id="pan-cnt">0</span> <span id="pan-lbl">article sélectionné</span></div>
+    <div class="pan-det" id="pan-det"></div>
   </div>
-  <div class="panier-actions">
-    <button class="panier-clear" onclick="clearSelection()">Tout désélectionner</button>
-    <button class="panier-btn" onclick="goToReservation()">Réserver cette sélection →</button>
+  <div class="pan-acts">
+    <button class="pan-clr" id="pan-clr">Tout désélectionner</button>
+    <button class="pan-btn" id="pan-btn">Réserver cette sélection &#8594;</button>
   </div>
 </div>
 
-<div id="contenuModal" class="modal-overlay" onclick="if(event.target===this)closeContenu()">
+<div id="mo-contenu" class="mo">
   <div class="modal">
-    <div class="modal-header">
-      <d<script>
+    <div class="mo-hd">
+      <div><h3 id="mo-title"></h3><div class="mo-sub" id="mo-sub"></div></div>
+      <button class="mo-cls" id="mo-cls">&#10005;</button>
+    </div>
+    <div class="mo-body"><ul class="cl" id="mo-list"></ul></div>
+    <div class="mo-ft"><button class="btn btn-p" id="mo-ok">Fermer</button></div>
+  </div>
+</div>
+
+<script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWQRuW2W-nmNfc4B2U5ok1e15O3WgB-ejfxdy7QDU-67cfU4i9UbeB57z9VEgRMHz_Hg/exec';
-const CAT_REVERSE = {Tentes:'tentes',Cuisine:'cuisine',Sport:'sport',Bureautique:'bureau',Camping:'camping',Loisirs:'loisirs',Linge:'linge',Mobilier:'mobilier',Divers:'divers','Hygiène':'hygiene'};
-const CAT_LABELS = {tentes:'Tentes',cuisine:'Cuisine',sport:'Sport',bureau:'Bureautique',camping:'Camping',loisirs:'Loisirs',linge:'Linge',mobilier:'Mobilier',divers:'Divers',hygiene:'Hygiène'};
+const CAT_LABELS = {tentes:'Tentes',cuisine:'Cuisine',sport:'Sport',bureau:'Bureautique',camping:'Camping',loisirs:'Loisirs',linge:'Linge',mobilier:'Mobilier',divers:'Divers',hygiene:'Hygiene'};
+const CAT_REV = {Tentes:'tentes',Cuisine:'cuisine',Sport:'sport',Bureautique:'bureau',Camping:'camping',Loisirs:'loisirs',Linge:'linge',Mobilier:'mobilier',Divers:'divers',Hygiene:'hygiene'};
 const ITEMS_LOCAL = [{"ref":"A1-01","nom":"Tables plastique","cat":"mobilier","type":"article","emoji":"🪑","dispo":14,"total":14,"etat":"ok","contenu":null},{"ref":"A1-02","nom":"Table métal (plancha)","cat":"mobilier","type":"article","emoji":"🪑","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"A1-03","nom":"Nappes","cat":"mobilier","type":"article","emoji":"🧺","dispo":null,"total":null,"etat":"warn","contenu":null},{"ref":"A2-01","nom":"Bancs bois","cat":"mobilier","type":"article","emoji":"🪑","dispo":18,"total":18,"etat":"ok","contenu":null},{"ref":"A2-02","nom":"Chaises camping pliantes","cat":"mobilier","type":"article","emoji":"🪑","dispo":12,"total":12,"etat":"ok","contenu":null},{"ref":"A3-01","nom":"Plancha (77×75cm)","cat":"cuisine","type":"article","emoji":"🍳","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"A3-02","nom":"Grille barbecue 40×70cm","cat":"cuisine","type":"article","emoji":"🔥","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G-01","nom":"Frigos","cat":"cuisine","type":"article","emoji":"🧊","dispo":3,"total":3,"etat":"ok","contenu":null},{"ref":"G-02","nom":"Évier cuisine","cat":"cuisine","type":"article","emoji":"🚿","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G-03","nom":"Tuyau arrosage (60m)","cat":"divers","type":"article","emoji":"🌊","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"B1","nom":"Caisse B1 — Couvertures","cat":"camping","type":"caisse","emoji":"🛏️","dispo":1,"total":1,"etat":"warn","contenu":["Couvertures (quantité à vérifier)"]},{"ref":"B2","nom":"Caisse B2 — Gaz","cat":"camping","type":"caisse","emoji":"🔥","dispo":1,"total":1,"etat":"ok","contenu":["Bouteilles gaz Camping Gaz × 6","Bouteilles mini réchauds type 206/200 × 4","Bouteilles gaz Cube × 3","Détendeur + Tuyau × 4"]},{"ref":"B3","nom":"Caisse B3 — Réchauds","cat":"cuisine","type":"caisse","emoji":"🍳","dispo":1,"total":1,"etat":"ok","contenu":["Réchauds mini-cartouches × 2","Grand réchauds CampingGaz × 2","Réchauds 2 plaques CampingGaz × 1","Plaque induction autonome × 2","Très grand bruleur gaz (paella) × 1","Grand bruleur gaz × 2"]},{"ref":"B4","nom":"Caisse B4 — Électricité","cat":"divers","type":"caisse","emoji":"🔌","dispo":1,"total":1,"etat":"ok","contenu":["Rallonges électrique 20m orange × 2","Rallonges électrique 10m blanche × 3","Rallonges électrique 40m orange × 2","Crochet pour projecteur × 3","Multiprise avec fil × 4","Multiprise sans fil × 4","Raccord borne camping × 3","Projecteur LED × 3"]},{"ref":"C1-01","nom":"Glaciaire 1","cat":"cuisine","type":"article","emoji":"🧊","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"C1-02","nom":"Glaciaire 2","cat":"cuisine","type":"article","emoji":"🧊","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"C12-01","nom":"Grande Glaciaire","cat":"cuisine","type":"article","emoji":"🧊","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"C2","nom":"Caisse C2 — Service pain & eau","cat":"cuisine","type":"caisse","emoji":"🍞","dispo":1,"total":1,"etat":"ok","contenu":["Panières à pain × 15","Pots à eau × 12"]},{"ref":"C3","nom":"Caisse C3 — Gourdes & Jerricans","cat":"camping","type":"caisse","emoji":"🫙","dispo":1,"total":1,"etat":"ok","contenu":["Gourdes × 6","Grand jerrican × 1","Petits jerricans × 3"]},{"ref":"C5","nom":"Caisse C5 — Café","cat":"cuisine","type":"caisse","emoji":"☕","dispo":1,"total":1,"etat":"ok","contenu":["Cafetière filtre × 1","Bouilloires × 2","Filtres à café"]},{"ref":"C6","nom":"Caisse C6 — Saladiers Camping","cat":"cuisine","type":"caisse","emoji":"🥗","dispo":1,"total":1,"etat":"ok","contenu":["Big saladiers × 2","Grands saladiers × 2","Moyens saladiers × 4","Petits saladiers × 4","Saladiers jetables × 6","Planches à découper × 6"]},{"ref":"C7","nom":"Caisse C7 — Lot 2 Cuisson","cat":"cuisine","type":"caisse","emoji":"🍲","dispo":1,"total":1,"etat":"ok","contenu":["Grande marmite × 1","Cuit vapeur × 1","Poêle + Couvercle × 1","Casserole + Couvercle + Poignée × 1"]},{"ref":"C8","nom":"Caisse C8 — Lot 1 Cuisson","cat":"cuisine","type":"caisse","emoji":"🍲","dispo":1,"total":1,"etat":"ok","contenu":["Grande marmite × 1","Cocotte Minute × 1","Casserole moyenne + couvercle × 1"]},{"ref":"C9","nom":"Caisse C9 — Poêles","cat":"cuisine","type":"caisse","emoji":"🍳","dispo":1,"total":1,"etat":"ok","contenu":["Poêles à crêpes × 2","Poêle inox × 1","Poêles tefal × 3","Couvercles × 2","Poignée × 1","Maniques × 4"]},{"ref":"C10","nom":"Caisse C10 — Passoires & Plats","cat":"cuisine","type":"caisse","emoji":"🥣","dispo":1,"total":1,"etat":"ok","contenu":["Essoreuses salade × 2","Passoires × 2","Plats de service × 4","Petite passoire × 1"]},{"ref":"C14","nom":"Caisse C14 — Vaisselle Itinérant","cat":"cuisine","type":"caisse","emoji":"🍽️","dispo":1,"total":1,"etat":"ok","contenu":["Assiettes × 41","Bols × 41","Verres × 41"]},{"ref":"C17","nom":"Caisse C17 — Vaisselle Tour Camping","cat":"cuisine","type":"caisse","emoji":"🍽️","dispo":1,"total":1,"etat":"ok","contenu":["Couverts × 50","Assiettes × 45","Bols × 45","Verres × 45"]},{"ref":"D5-01","nom":"Mégaphone","cat":"loisirs","type":"article","emoji":"📣","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"D7","nom":"Caisse D7 — Tir à l'arc","cat":"loisirs","type":"caisse","emoji":"🏹","dispo":1,"total":1,"etat":"ok","contenu":["Arc de tir × 1","Flèches × 3"]},{"ref":"D8","nom":"Caisse D8 — Sport 1","cat":"sport","type":"caisse","emoji":"⚽","dispo":1,"total":1,"etat":"ok","contenu":["Chasubles 1 couleur × 15","Ballon foot × 1","Ballon volley × 1","Brassards / bandeaux × 2 lots","Diverses petites balles","Jeu de Stratégo (non vérifié)"]},{"ref":"D9","nom":"Caisse D9 — Sport 1 bis","cat":"sport","type":"caisse","emoji":"⚽","dispo":1,"total":1,"etat":"ok","contenu":["Chasubles 1 couleur × 15","Ballon foot × 1","Ballon volley × 1","Brassards / bandeaux × 2 lots","Diverses petites balles","Jeu de Stratégo (non vérifié)"]},{"ref":"D10","nom":"Caisse D10 — Sport 2","cat":"sport","type":"caisse","emoji":"🏸","dispo":1,"total":1,"etat":"ok","contenu":["Cônes grands × 6","Raquettes PP × 6","Frisbee × 1","Volant × 1","Molky × 1","Diabolo × 1"]},{"ref":"D11","nom":"Caisse D11 — Sport 2 bis","cat":"sport","type":"caisse","emoji":"🏸","dispo":1,"total":1,"etat":"ok","contenu":["Cônes petits × 1 lot","Raquettes PP × 6","Frisbee × 1","Volant × 1","Molky × 1","Diabolo × 1"]},{"ref":"D12","nom":"Caisse D12 — Bureautique Petits","cat":"bureau","type":"caisse","emoji":"✏️","dispo":1,"total":1,"etat":"ok","contenu":["Boite stylos et crayons papier × 1","Boite feutres × 1","Boite marqueurs × 1","Boite marqueurs textiles × 1","Boite divers (scotch, colle, ciseaux, craies…) × 1","Règles × 1 petit lot","Feuilles couleurs, blanches, divers textures × 1 lot"]},{"ref":"D13","nom":"Caisse D13 — Peinture Petits","cat":"bureau","type":"caisse","emoji":"🎨","dispo":1,"total":1,"etat":"ok","contenu":["Peinture × 1 lot","Pinceaux × 1 bon lot"]},{"ref":"D15","nom":"Caisse D15 — Bureautique Ados","cat":"bureau","type":"caisse","emoji":"✏️","dispo":1,"total":1,"etat":"ok","contenu":["Boite stylos et crayons papier × 1","Boite feutres × 1","Boite marqueurs × 1","Boite marqueurs textiles × 1","Boite divers × 1","Règles × 1 petit lot","Petit lot peinture × 1","Cutter × 1","Feuilles couleurs, blanches, divers textures × 1 lot"]},{"ref":"D16","nom":"Caisse D16 — Bureautique Jeunes","cat":"bureau","type":"caisse","emoji":"✏️","dispo":1,"total":1,"etat":"ok","contenu":["Boite stylos et crayons papier × 1","Boite feutres × 1","Boite marqueurs × 1","Boite marqueurs textiles × 1","Boite divers × 1","Règles × 1 petit lot","Petit lot peinture × 1","Cutter × 1","Feuilles couleurs, blanches, divers textures × 1 lot"]},{"ref":"D14-01","nom":"Plastifieuse","cat":"bureau","type":"article","emoji":"🖨️","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"D18-01","nom":"Vidéo projecteur","cat":"loisirs","type":"article","emoji":"📽️","dispo":1,"total":1,"etat":"warn","contenu":null},{"ref":"E1-01","nom":"Duvet toile","cat":"camping","type":"article","emoji":"🛌","dispo":4,"total":4,"etat":"ok","contenu":null},{"ref":"E1-02","nom":"Duvet 10°","cat":"camping","type":"article","emoji":"🛌","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"E1-03","nom":"Duvet 20°","cat":"camping","type":"article","emoji":"🛌","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"E7","nom":"Caisse E7 — Linge Gîte","cat":"linge","type":"caisse","emoji":"🧺","dispo":1,"total":1,"etat":"ok","contenu":["Torchons vaisselle × 70"]},{"ref":"E8","nom":"Caisse E8 — Linge Camping","cat":"linge","type":"caisse","emoji":"🧺","dispo":1,"total":1,"etat":"ok","contenu":["Tabliers × 10","Toques × 10","Torchons mains × 43"]},{"ref":"E9","nom":"Caisse E9 — Torchons Camping","cat":"linge","type":"caisse","emoji":"🧺","dispo":1,"total":1,"etat":"ok","contenu":["Torchons vaisselle × 70"]},{"ref":"E10","nom":"Caisse E10 — Linge Gîte complet","cat":"linge","type":"caisse","emoji":"🧺","dispo":1,"total":1,"etat":"ok","contenu":["Tabliers × 10","Toques × 10","Torchons mains × 40","Tabliers ménage × 7","Tabliers plonge × 2"]},{"ref":"F1-01","nom":"Matelas mousse","cat":"camping","type":"article","emoji":"🛏️","dispo":4,"total":4,"etat":"ok","contenu":null},{"ref":"F1-02","nom":"Matelas gonflables","cat":"camping","type":"article","emoji":"🛏️","dispo":3,"total":3,"etat":"ok","contenu":null},{"ref":"F3-01","nom":"Tente 2s noire (3 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"F3-02","nom":"Tente 2s light (3 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G2-01","nom":"Tentes 2s (3 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":5,"total":5,"etat":"ok","contenu":null},{"ref":"G3-01","nom":"Tente Arpenaz Family 4 (4 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G4-01","nom":"Tente Arpenaz Family 4 (4 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G5-01","nom":"Tente Arpenaz Family 4.1 (4 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G6-01","nom":"Tente Arpenaz Family 4.1 (4 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G7-01","nom":"Tente matos","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G8-01","nom":"Tente T4.2 dome (6 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G9-01","nom":"Tente Arpenaz 4.2 F&B (6 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G10-01","nom":"Tente Arpenaz 4.2 (6 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G11-01","nom":"Tente 8 places","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G12-01","nom":"Tente 6 places","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"D1","nom":"Caisse D1 — Déguisements Médiéval","cat":"loisirs","type":"caisse","emoji":"🏰","dispo":1,"total":1,"etat":"ok","contenu":["Costumes médiévaux (contenu à détailler)"]},{"ref":"D2","nom":"Caisse D2 — Déguisements Romains","cat":"loisirs","type":"caisse","emoji":"🏛️","dispo":1,"total":1,"etat":"ok","contenu":["Obélix & époque romaine (contenu à détailler)"]},{"ref":"D3","nom":"Caisse D3 — Accessoires Déguisements","cat":"loisirs","type":"caisse","emoji":"🎭","dispo":1,"total":1,"etat":"ok","contenu":["Chapeaux divers","Lunettes","Nœuds papillon","Accessoires cowboy (contenu à détailler)"]},{"ref":"D4","nom":"Caisse D4 — Déguisements Hippie & Tutus","cat":"loisirs","type":"caisse","emoji":"🎭","dispo":1,"total":1,"etat":"ok","contenu":["Hippie × 2","Grands tutus × 2","Diverses perruques (contenu à détailler)"]},{"ref":"E11","nom":"Caisse E11 — Hygiène Gîte","cat":"hygiene","type":"caisse","emoji":"🧴","dispo":1,"total":1,"etat":"ok","contenu":["Consommables hygiène pour le Gîte (contenu à détailler)"]},{"ref":"E12","nom":"Caisse E12 — Hygiène Gîte (2)","cat":"hygiene","type":"caisse","emoji":"🧴","dispo":1,"total":1,"etat":"ok","contenu":["Consommables hygiène pour le Gîte (contenu à détailler)"]},{"ref":"E13","nom":"Caisse E13 — Hygiène Camping","cat":"hygiene","type":"caisse","emoji":"🧴","dispo":1,"total":1,"etat":"ok","contenu":["Consommables hygiène pour le Camping (contenu à détailler)"]},{"ref":"GX-01","nom":"Barnum","cat":"camping","type":"article","emoji":"🎪","dispo":1,"total":1,"etat":"ok","contenu":null}];
 
-// ── ÉTAT GLOBAL ───────────────────────────────────────────────
-let itemsData = [];          // données en cours (depuis Sheet ou local)
-let dispoParDates = {};      // { ref: qteDispo } calculé pour les dates choisies
-let datesActives = false;    // true si les deux dates sont saisies ET dispo calculée
+let itemsData = [];
+let dispoParDates = {};
+let datesActives = false;
 const selection = {};
-let currentCatFilter = '';
-let currentSearch = '';
+let catFilter = '';
+let searchFilter = '';
 
-// ── CHARGEMENT INVENTAIRE ─────────────────────────────────────
+// ── UTILS ─────────────────────────────────────────────────────
+function parseDateFR(s) {
+  if (!s) return new Date('invalid');
+  if (typeof s === 'string' && s.includes('/')) {
+    const p = s.split('/');
+    return new Date(p[2] + '-' + p[1].padStart(2,'0') + '-' + p[0].padStart(2,'0'));
+  }
+  return new Date(s);
+}
+function showSuccess(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('show');
+  setTimeout(function() { el.classList.remove('show'); }, 4000);
+}
+function etatBadge(e) {
+  if (e === 'ok') return '<span class="bdg ok">Bon état</span>';
+  if (e === 'warn') return '<span class="bdg warn">&#9888;&#65039; À vérifier</span>';
+  if (e === 'alert') return '<span class="bdg alrt">&#10060; Alerte</span>';
+  return '';
+}
+function dispoCell(item, hasDates, dispoVal) {
+  var total = item.type === 'caisse' ? 1 : (item.total || item.dispo || 0);
+  if (!hasDates) {
+    if (item.type === 'caisse') return '1 unité';
+    if (item.dispo == null) return '?';
+    return item.dispo + '/' + total;
+  }
+  var d = dispoVal;
+  if (d === 0) return '<span style="color:#c07060;font-weight:700">0/' + total + ' — Indispo</span>';
+  if (d < total) return '<span style="color:#8a5500;font-weight:700">' + d + '/' + total + ' dispo</span>';
+  return '<span style="color:#1a6b2f">' + d + '/' + total + '</span>';
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+  var pg = document.getElementById(pageId);
+  if (pg) pg.classList.add('active');
+  var tabMap = {inventaire:'tab-inv',reservations:'tab-res',departs:'tab-dep',retours:'tab-ret',historique:'tab-his'};
+  var tab = document.getElementById(tabMap[pageId]);
+  if (tab) tab.classList.add('active');
+  if (pageId === 'reservations') loadReservations();
+  if (pageId === 'departs') loadDeparts();
+  if (pageId === 'retours') loadRetours();
+}
+
+// ── INVENTAIRE ────────────────────────────────────────────────
 async function loadInventaire() {
-  document.getElementById('inventaire-body').innerHTML =
-    '<tr><td colspan="9" style="text-align:center;padding:24px;color:#7a9a80">⏳ Chargement…</td></tr>';
+  var tbody = document.getElementById('inv-body');
+  tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:#7a9a80">&#9203; Chargement…</td></tr>';
   try {
-    const res = await fetch(SCRIPT_URL + '?action=getInventaire');
-    const data = await res.json();
+    var res = await fetch(SCRIPT_URL + '?action=getInventaire');
+    var data = await res.json();
     if (data.items && data.items.length > 0) {
-      itemsData = data.items.map(row => {
-        const loc = ITEMS_LOCAL.find(i => i.ref === row['Référence']);
+      itemsData = data.items.map(function(row) {
+        var loc = ITEMS_LOCAL.find(function(i) { return i.ref === row['Référence']; });
         return {
-          ref:    row['Référence'],
-          nom:    row['Nom'],
-          type:   row['Type'] === 'caisse' ? 'caisse' : 'article',
-          cat:    loc ? loc.cat : (CAT_REVERSE[row['Catégorie']] || 'divers'),
-          emoji:  loc ? loc.emoji : '📦',
-          total:  parseInt(row['Total'])      || 0,
-          dispo:  parseInt(row['Disponible']) || 0,
-          etat:   row['État'] || 'ok',
-          contenu: loc ? loc.contenu : (row['Contenu'] ? row['Contenu'].split(' | ') : null),
+          ref: row['Référence'], nom: row['Nom'],
+          type: row['Type'] === 'caisse' ? 'caisse' : 'article',
+          cat: loc ? loc.cat : (CAT_REV[row['Catégorie']] || 'divers'),
+          emoji: loc ? loc.emoji : '📦',
+          total: parseInt(row['Total']) || 0,
+          dispo: parseInt(row['Disponible']) || 0,
+          etat: row['État'] || 'ok',
+          contenu: loc ? loc.contenu : (row['Contenu'] ? row['Contenu'].split(' | ') : null)
         };
       });
     } else {
@@ -312,9 +363,8 @@ async function loadInventaire() {
   } catch(e) {
     itemsData = ITEMS_LOCAL;
   }
-  // Si des dates sont déjà saisies, calculer les dispos
-  const dep = document.getElementById('cb-depart').value;
-  const ret = document.getElementById('cb-retour').value;
+  var dep = document.getElementById('cb-depart').value;
+  var ret = document.getElementById('cb-retour').value;
   if (dep && ret) {
     onDatesChange();
   } else {
@@ -322,10 +372,105 @@ async function loadInventaire() {
   }
 }
 
-// ── BARRE DATES ───────────────────────────────────────────────
+function renderTable() {
+  var data = filteredItems();
+  var tbody = document.getElementById('inv-body');
+  var hasDates = datesActives;
+  tbody.innerHTML = '';
+  data.forEach(function(item) {
+    var isSel = !!selection[item.ref];
+    var dispoVal = hasDates ? (dispoParDates[item.ref] !== undefined ? dispoParDates[item.ref] : (item.dispo || 0)) : (item.dispo || 0);
+    var disabled = (item.dispo === 0 || item.dispo === null);
+    var maxQ = item.type === 'caisse' ? 1 : dispoVal;
+    var curQ = selection[item.ref] || 1;
+
+    var tr = document.createElement('tr');
+    tr.className = 'ir' + (isSel ? ' sel' : '');
+
+    var tdCb = document.createElement('td');
+    var cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.className = 'rc';
+    cb.checked = isSel; cb.disabled = disabled;
+    cb.dataset.ref = item.ref;
+    tdCb.appendChild(cb);
+    tr.appendChild(tdCb);
+
+    var tdRef = document.createElement('td');
+    tdRef.innerHTML = '<span class="ref">' + item.ref + '</span>';
+    tr.appendChild(tdRef);
+
+    var tdNom = document.createElement('td');
+    tdNom.innerHTML = '<strong>' + item.emoji + ' ' + item.nom + '</strong>';
+    tr.appendChild(tdNom);
+
+    var tdType = document.createElement('td');
+    tdType.innerHTML = item.type === 'caisse' ? '<span class="bdg caisse">&#128230; Caisse</span>' : '<span class="bdg art">&#128309; Article</span>';
+    tr.appendChild(tdType);
+
+    var tdCat = document.createElement('td');
+    tdCat.style.fontSize = '12px'; tdCat.style.color = '#557a5e';
+    tdCat.textContent = CAT_LABELS[item.cat] || item.cat;
+    tr.appendChild(tdCat);
+
+    var tdDispo = document.createElement('td');
+    tdDispo.innerHTML = dispoCell(item, hasDates, dispoVal);
+    tr.appendChild(tdDispo);
+
+    var tdEtat = document.createElement('td');
+    tdEtat.innerHTML = etatBadge(item.etat);
+    tr.appendChild(tdEtat);
+
+    var tdQty = document.createElement('td');
+    if (!disabled && maxQ > 0) {
+      var wrap = document.createElement('div');
+      wrap.className = 'qty-cell';
+      var bm = document.createElement('button'); bm.className = 'qb'; bm.textContent = '−'; bm.disabled = curQ <= 1;
+      var inp = document.createElement('input'); inp.type = 'number'; inp.className = 'qv'; inp.id = 'qty-' + item.ref; inp.value = curQ; inp.min = 1; inp.max = maxQ;
+      var bp = document.createElement('button'); bp.className = 'qb'; bp.textContent = '+'; bp.disabled = curQ >= maxQ;
+      var mx = document.createElement('span'); mx.className = 'qmax'; mx.textContent = '/ ' + maxQ;
+      (function(ref) {
+        bm.addEventListener('click', function() { adjustQty(ref, -1); });
+        bp.addEventListener('click', function() { adjustQty(ref, 1); });
+        inp.addEventListener('change', function() { setQty(ref, this.value); });
+        cb.addEventListener('change', function() { toggleItem(ref, this); });
+      })(item.ref);
+      wrap.appendChild(bm); wrap.appendChild(inp); wrap.appendChild(bp); wrap.appendChild(mx);
+      tdQty.appendChild(wrap);
+    } else {
+      tdQty.innerHTML = '<span style="font-size:11px;color:#b0a090">—</span>';
+    }
+    tr.appendChild(tdQty);
+
+    var tdC = document.createElement('td');
+    if (item.type === 'caisse') {
+      var btn = document.createElement('button');
+      btn.className = 'cb-btn'; btn.textContent = '📋 Contenu';
+      (function(ref) { btn.addEventListener('click', function() { openContenu(ref); }); })(item.ref);
+      tdC.appendChild(btn);
+    } else { tdC.textContent = '—'; }
+    tr.appendChild(tdC);
+
+    tbody.appendChild(tr);
+  });
+  renderStats();
+}
+
+function renderStats() {
+  var t = itemsData.length;
+  var d = itemsData.filter(function(i) { return i.etat === 'ok' && i.dispo !== 0; }).length;
+  var w = itemsData.filter(function(i) { return i.etat === 'warn'; }).length;
+  var a = itemsData.filter(function(i) { return i.etat === 'alert'; }).length;
+  document.getElementById('stats-bar').innerHTML =
+    '<div class="stat"><div class="num">' + t + '</div><div class="lbl">Références</div></div>' +
+    '<div class="stat"><div class="num">' + d + '</div><div class="lbl">Disponibles</div></div>' +
+    '<div class="stat warn"><div class="num">' + w + '</div><div class="lbl">À vérifier</div></div>' +
+    '<div class="stat alert"><div class="num">' + a + '</div><div class="lbl">Alertes</div></div>';
+}
+
+// ── DATES ─────────────────────────────────────────────────────
 function onDatesChange() {
-  const dep = document.getElementById('cb-depart').value;
-  const ret = document.getElementById('cb-retour').value;
+  var dep = document.getElementById('cb-depart').value;
+  var ret = document.getElementById('cb-retour').value;
   if (!dep || !ret) {
     datesActives = false;
     dispoParDates = {};
@@ -335,44 +480,29 @@ function onDatesChange() {
     renderTable();
     return;
   }
-  datesActives = false;  // sera mis à true seulement quand le calcul est fini
-  document.getElementById('th-dispo').textContent = 'Dispo sur ces dates…';
+  document.getElementById('th-dispo').textContent = 'Dispo sur ces dates';
   checkDispoParDates(dep, ret);
 }
 
-function parseDateFR(str) {
-  if (!str) return new Date('invalid');
-  // Si format dd/mm/yyyy -> convertir en yyyy-mm-dd
-  if (typeof str === 'string' && str.includes('/')) {
-    const parts = str.split('/');
-    return new Date(parts[2] + '-' + parts[1] + '-' + parts[0]);
-  }
-  return new Date(str);
-}
-
 async function checkDispoParDates(dep, ret) {
-  const status = document.getElementById('cb-status');
-  status.textContent = '⏳ Vérification des disponibilités…';
+  var status = document.getElementById('cb-status');
+  status.textContent = '⏳ Vérification…';
   status.className = 'cb-status';
-
-  // Initialiser dispo = total pour chaque article
   dispoParDates = {};
-  itemsData.forEach(item => {
+  itemsData.forEach(function(item) {
     dispoParDates[item.ref] = item.type === 'caisse' ? 1 : (item.total || item.dispo || 0);
   });
-
   try {
-    const res = await fetch(SCRIPT_URL + '?action=getReservations');
-    const data = await res.json();
+    var res = await fetch(SCRIPT_URL + '?action=getReservations');
+    var data = await res.json();
     if (data.reservations && data.reservations.length) {
-      const d1 = new Date(dep), d2 = new Date(ret);
-      data.reservations.forEach(r => {
+      var d1 = new Date(dep), d2 = new Date(ret);
+      data.reservations.forEach(function(r) {
         if (r['Statut'] === 'Refusé') return;
-        const rd1 = parseDateFR(r['Dates départ']), rd2 = parseDateFR(r['Date retour']);
-        // Chevauchement ?
+        var rd1 = parseDateFR(r['Dates départ']), rd2 = parseDateFR(r['Date retour']);
         if (d1 <= rd2 && d2 >= rd1) {
           try {
-            JSON.parse(r['Matériel']).forEach(m => {
+            JSON.parse(r['Matériel']).forEach(function(m) {
               if (dispoParDates[m.ref] !== undefined) {
                 dispoParDates[m.ref] = Math.max(0, dispoParDates[m.ref] - (parseInt(m.qty) || 1));
               }
@@ -382,287 +512,149 @@ async function checkDispoParDates(dep, ret) {
       });
     }
   } catch(e) {}
-
-  // Résumé dans la barre
-  const indispos = itemsData.filter(i => dispoParDates[i.ref] === 0 && (i.total || i.dispo) > 0).length;
-  const partiels = itemsData.filter(i => dispoParDates[i.ref] > 0 && dispoParDates[i.ref] < (i.total || i.dispo || 0)).length;
-  if (indispos > 0) {
-    status.textContent = '⚠️ ' + indispos + ' article(s) indisponible(s) sur ces dates';
-    status.className = 'cb-status warn';
-  } else if (partiels > 0) {
-    status.textContent = '⚠️ ' + partiels + ' article(s) partiellement réservé(s)';
-    status.className = 'cb-status warn';
-  } else {
-    status.textContent = '✅ Tout le matériel est disponible sur ces dates';
-    status.className = 'cb-status ok';
-  }
+  var indispos = itemsData.filter(function(i) { return dispoParDates[i.ref] === 0 && (i.total || i.dispo) > 0; }).length;
+  var partiels = itemsData.filter(function(i) { return dispoParDates[i.ref] > 0 && dispoParDates[i.ref] < (i.total || i.dispo || 0); }).length;
+  if (indispos > 0) { status.textContent = '⚠️ ' + indispos + ' article(s) indisponible(s)'; status.className = 'cb-status warn'; }
+  else if (partiels > 0) { status.textContent = '⚠️ ' + partiels + ' article(s) partiellement réservé(s)'; status.className = 'cb-status warn'; }
+  else { status.textContent = '✅ Tout disponible sur ces dates'; status.className = 'cb-status ok'; }
   datesActives = true;
   renderTable();
 }
 
-// ── RENDU TABLEAU ─────────────────────────────────────────────
-function etatBadge(e) {
-  const map = {ok:'<span class="badge badge-ok">Bon état</span>',warn:'<span class="badge badge-warn">⚠️ À vérifier</span>',alert:'<span class="badge badge-alert">❌ Alerte</span>'};
-  return map[e] || '';
-}
-
-function dispoCell(item, hasDates, dispoVal) {
-  const total = item.type === 'caisse' ? 1 : (item.total || item.dispo || 0);
-  if (!hasDates) {
-    if (item.type === 'caisse') return '1 unité';
-    if (item.dispo == null) return '?';
-    return item.dispo + '/' + total;
-  }
-  // Avec dates
-  const d = dispoVal;
-  if (d === 0) return '<span style="color:#c07060;font-weight:700">0/' + total + ' — Indisponible</span>';
-  if (d < total) return '<span style="color:#8a5500;font-weight:700">' + d + '/' + total + ' dispo</span>';
-  return '<span style="color:#1a6b2f">' + d + '/' + total + '</span>';
-}
-
-function renderTable() {
-  const data = filteredItems();
-  const tbody = document.getElementById('inventaire-body');
-  const hasDates = datesActives;
-  tbody.innerHTML = '';
-  data.forEach(item => {
-    const isSel = !!selection[item.ref];
-    const dispoVal = hasDates ? (dispoParDates[item.ref] !== undefined ? dispoParDates[item.ref] : (item.dispo || 0)) : (item.dispo || 0);
-    const disabled = (item.dispo === 0 || item.dispo === null);
-    const maxQ = item.type === 'caisse' ? 1 : dispoVal;
-    const curQ = selection[item.ref] || 1;
-
-    const tr = document.createElement('tr');
-    tr.className = 'item-row' + (isSel ? ' selected' : '');
-
-    // Checkbox
-    const tdCb = document.createElement('td');
-    const cb = document.createElement('input');
-    cb.type = 'checkbox'; cb.className = 'row-check';
-    cb.checked = isSel; cb.disabled = disabled;
-    cb.dataset.ref = item.ref;
-    cb.addEventListener('change', function() { toggleItemCb(this); });
-    tdCb.appendChild(cb);
-    tr.appendChild(tdCb);
-
-    // Référence
-    const tdRef = document.createElement('td');
-    tdRef.innerHTML = '<span class="ref-badge">' + item.ref + '</span>';
-    tr.appendChild(tdRef);
-
-    // Nom
-    const tdNom = document.createElement('td');
-    tdNom.innerHTML = '<span class="item-name">' + item.emoji + ' ' + item.nom + '</span>';
-    tr.appendChild(tdNom);
-
-    // Type
-    const tdType = document.createElement('td');
-    tdType.innerHTML = item.type === 'caisse'
-      ? '<span class="badge badge-caisse">📦 Caisse</span>'
-      : '<span class="badge badge-article">🔹 Article</span>';
-    tr.appendChild(tdType);
-
-    // Catégorie
-    const tdCat = document.createElement('td');
-    tdCat.style.fontSize = '12px'; tdCat.style.color = '#557a5e';
-    tdCat.textContent = CAT_LABELS[item.cat] || item.cat;
-    tr.appendChild(tdCat);
-
-    // Disponibilité
-    const tdDispo = document.createElement('td');
-    tdDispo.innerHTML = dispoCell(item, hasDates, dispoVal);
-    tr.appendChild(tdDispo);
-
-    // État
-    const tdEtat = document.createElement('td');
-    tdEtat.innerHTML = etatBadge(item.etat);
-    tr.appendChild(tdEtat);
-
-    // Quantité stepper
-    const tdQty = document.createElement('td');
-    if (!disabled && maxQ > 0) {
-      const wrap = document.createElement('div');
-      wrap.className = 'qty-cell';
-
-      const btnMinus = document.createElement('button');
-      btnMinus.className = 'qty-btn'; btnMinus.textContent = '−';
-      btnMinus.disabled = curQ <= 1;
-      btnMinus.addEventListener('click', function() { adjustQty(item.ref, -1); });
-
-      const inp = document.createElement('input');
-      inp.type = 'number'; inp.className = 'qty-val';
-      inp.id = 'qty-' + item.ref;
-      inp.value = curQ; inp.min = 1; inp.max = maxQ;
-      inp.addEventListener('change', function() { setQty(item.ref, this.value); });
-
-      const btnPlus = document.createElement('button');
-      btnPlus.className = 'qty-btn'; btnPlus.textContent = '+';
-      btnPlus.disabled = curQ >= maxQ;
-      btnPlus.addEventListener('click', function() { adjustQty(item.ref, 1); });
-
-      const maxSpan = document.createElement('span');
-      maxSpan.className = 'qty-max'; maxSpan.textContent = '/ ' + maxQ;
-
-      wrap.appendChild(btnMinus); wrap.appendChild(inp);
-      wrap.appendChild(btnPlus); wrap.appendChild(maxSpan);
-      tdQty.appendChild(wrap);
-    } else {
-      tdQty.innerHTML = '<span style="font-size:11px;color:#b0a090">—</span>';
-    }
-    tr.appendChild(tdQty);
-
-    // Contenu (caisses seulement)
-    const tdContenu = document.createElement('td');
-    if (item.type === 'caisse') {
-      const btn = document.createElement('button');
-      btn.className = 'contenu-btn'; btn.textContent = '📋 Contenu';
-      btn.dataset.ref = item.ref;
-      btn.addEventListener('click', function() { openContenu(this.dataset.ref); });
-      tdContenu.appendChild(btn);
-    } else {
-      tdContenu.textContent = '—';
-    }
-    tr.appendChild(tdContenu);
-
-    tbody.appendChild(tr);
-  });
-  renderStats();
-}
-
-function renderStats() {
-  const t = itemsData.length;
-  const d = itemsData.filter(i => i.etat==='ok' && i.dispo !== 0).length;
-  const w = itemsData.filter(i => i.etat==='warn').length;
-  const a = itemsData.filter(i => i.etat==='alert').length;
-  document.getElementById('stats-bar').innerHTML =
-    '<div class="stat-card"><div class="num">' + t + '</div><div class="lbl">Références totales</div></div>'
-    + '<div class="stat-card"><div class="num">' + d + '</div><div class="lbl">Disponibles</div></div>'
-    + '<div class="stat-card warn"><div class="num">' + w + '</div><div class="lbl">À vérifier</div></div>'
-    + '<div class="stat-card alert"><div class="num">' + a + '</div><div class="lbl">Alertes</div></div>';
-}
-
 // ── SÉLECTION ─────────────────────────────────────────────────
-function toggleItemCb(cb) {
-  toggleItem(cb.dataset.ref, cb);
-}
 function toggleItem(ref, cb) {
-  const item = itemsData.find(i => i.ref === ref);
+  var item = itemsData.find(function(i) { return i.ref === ref; });
   if (cb.checked) {
-    selection[ref] = item.type === 'caisse' ? 1 : parseInt(document.getElementById('qty-' + ref)?.value || 1);
+    var inp = document.getElementById('qty-' + ref);
+    selection[ref] = item.type === 'caisse' ? 1 : parseInt(inp ? inp.value : 1);
   } else {
     delete selection[ref];
   }
-  cb.closest('tr').classList.toggle('selected', cb.checked);
+  cb.closest('tr').classList.toggle('sel', cb.checked);
   updatePanier();
 }
 
 function adjustQty(ref, delta) {
-  const item = itemsData.find(i => i.ref === ref);
-  const maxQ = item.type === 'caisse' ? 1 : (datesActives ? (dispoParDates[ref] || 0) : (item.dispo || 0));
-  const inp = document.getElementById('qty-' + ref);
-  let v = Math.max(1, Math.min(maxQ, parseInt(inp.value) + delta));
+  var item = itemsData.find(function(i) { return i.ref === ref; });
+  var maxQ = item.type === 'caisse' ? 1 : (datesActives ? (dispoParDates[ref] || 0) : (item.dispo || 0));
+  var inp = document.getElementById('qty-' + ref);
+  var v = Math.max(1, Math.min(maxQ, parseInt(inp.value) + delta));
   inp.value = v;
   if (selection[ref] !== undefined) { selection[ref] = v; updatePanier(); }
-  const btns = inp.closest('.qty-cell').querySelectorAll('.qty-btn');
-  btns[0].disabled = v <= 1;
-  btns[1].disabled = v >= maxQ;
+  var btns = inp.closest('.qty-cell').querySelectorAll('.qb');
+  btns[0].disabled = v <= 1; btns[1].disabled = v >= maxQ;
 }
 
 function setQty(ref, val) {
-  const item = itemsData.find(i => i.ref === ref);
-  const maxQ = datesActives ? (dispoParDates[ref] || 0) : (item.dispo || 0);
+  var item = itemsData.find(function(i) { return i.ref === ref; });
+  var maxQ = datesActives ? (dispoParDates[ref] || 0) : (item.dispo || 0);
   val = Math.max(1, Math.min(maxQ, parseInt(val) || 1));
   document.getElementById('qty-' + ref).value = val;
   if (selection[ref] !== undefined) { selection[ref] = val; updatePanier(); }
 }
 
 function toggleAll(cb) {
-  document.querySelectorAll('#inventaire-body tr').forEach(tr => {
-    const rc = tr.querySelector('.row-check');
+  document.querySelectorAll('#inv-body tr').forEach(function(tr) {
+    var rc = tr.querySelector('.rc');
     if (!rc || rc.disabled) return;
     rc.checked = cb.checked;
-    const ref = rc.dataset.ref;
-    const item = itemsData.find(i => i.ref === ref);
+    var ref = rc.dataset.ref;
+    var item = itemsData.find(function(i) { return i.ref === ref; });
     if (cb.checked) selection[ref] = item.type === 'caisse' ? 1 : (datesActives ? (dispoParDates[ref] || 1) : (item.dispo || 1));
     else delete selection[ref];
-    tr.classList.toggle('selected', cb.checked);
+    tr.classList.toggle('sel', cb.checked);
   });
   updatePanier();
 }
 
 function updatePanier() {
-  const keys = Object.keys(selection);
-  const bar = document.getElementById('panier-bar');
-  if (!keys.length) { bar.classList.remove('visible'); return; }
-  bar.classList.add('visible');
-  document.getElementById('panier-count').textContent = keys.length;
-  document.getElementById('panier-label').textContent = keys.length > 1 ? ' articles sélectionnés' : ' article sélectionné';
-  document.getElementById('panier-detail').textContent = keys.map(r => {
-    const it = itemsData.find(i => i.ref === r);
+  var keys = Object.keys(selection);
+  var bar = document.getElementById('panier');
+  if (!keys.length) { bar.classList.remove('vis'); return; }
+  bar.classList.add('vis');
+  document.getElementById('pan-cnt').textContent = keys.length;
+  document.getElementById('pan-lbl').textContent = keys.length > 1 ? ' articles sélectionnés' : ' article sélectionné';
+  document.getElementById('pan-det').textContent = keys.map(function(r) {
+    var it = itemsData.find(function(i) { return i.ref === r; });
     return it.type === 'caisse' ? r : r + '×' + selection[r];
   }).join(' · ');
 }
 
 function clearSelection() {
-  Object.keys(selection).forEach(k => delete selection[k]);
+  Object.keys(selection).forEach(function(k) { delete selection[k]; });
   document.getElementById('check-all').checked = false;
   renderTable();
   updatePanier();
 }
 
-function goToReservation() {
-  const keys = Object.keys(selection);
-  const ri = document.getElementById('recap-items');
-  if (keys.length) {
-    document.getElementById('recap-selection').style.display = 'block';
-    document.getElementById('recap-empty').style.display = 'none';
-    ri.innerHTML = keys.map(r => {
-      const it = itemsData.find(i => i.ref === r);
-      const qt = it.type === 'caisse' ? '1 caisse entière' : selection[r] + ' unité' + (selection[r] > 1 ? 's' : '');
-      return '<div class="sel-recap-row"><span><span class="ref">' + r + '</span>' + it.emoji + ' ' + it.nom + '</span><span class="qty-tag">' + qt + '</span></div>';
-    }).join('');
-  } else {
-    document.getElementById('recap-selection').style.display = 'none';
-    document.getElementById('recap-empty').style.display = 'block';
-  }
-  const camp = document.getElementById('cb-camp').value;
-  const dep  = document.getElementById('cb-depart').value;
-  const ret  = document.getElementById('cb-retour').value;
-  if (camp) document.getElementById('res-camp').value = camp;
-  if (dep)  document.getElementById('res-depart').value = dep;
-  if (ret)  document.getElementById('res-retour').value = ret;
-  showPage('reservations', null);
-  document.querySelectorAll('.nav-tab').forEach((t,i) => t.classList.toggle('active', i===1));
+function filteredItems() {
+  return itemsData.filter(function(i) {
+    var cm = !catFilter || i.cat === catFilter;
+    var sm = !searchFilter || i.nom.toLowerCase().includes(searchFilter) || i.ref.toLowerCase().includes(searchFilter);
+    return cm && sm;
+  });
 }
 
-// ── RÉSERVATIONS ──────────────────────────────────────────────
-async function envoyerReservation() {
-  const camp     = document.getElementById('res-camp').value      || document.getElementById('cb-camp').value;
-  const directeur = document.getElementById('res-directeur').value;
-  const dep      = document.getElementById('res-depart').value    || document.getElementById('cb-depart').value;
-  const ret      = document.getElementById('res-retour').value    || document.getElementById('cb-retour').value;
-  const notes    = document.getElementById('res-notes').value;
-  if (!camp || !directeur || !dep || !ret) {
-    alert('Merci de remplir le nom du camp, le directeur et les dates.');
-    return;
+function filterTable(val) { searchFilter = val.toLowerCase(); renderTable(); }
+
+// ── MODAL CONTENU ─────────────────────────────────────────────
+function openContenu(ref) {
+  var it = itemsData.find(function(i) { return i.ref === ref; }) || ITEMS_LOCAL.find(function(i) { return i.ref === ref; });
+  if (!it || !it.contenu) return;
+  document.getElementById('mo-title').textContent = it.nom;
+  document.getElementById('mo-sub').textContent = it.ref + ' · Contenu référencé';
+  document.getElementById('mo-list').innerHTML = it.contenu.map(function(c) {
+    return '<li><span class="cd"></span>' + c + '</li>';
+  }).join('');
+  document.getElementById('mo-contenu').classList.add('open');
+}
+
+// ── RÉSERVATION ───────────────────────────────────────────────
+function goToReservation() {
+  var keys = Object.keys(selection);
+  var ri = document.getElementById('recap-items');
+  if (keys.length) {
+    document.getElementById('recap-sel').style.display = 'block';
+    document.getElementById('recap-empty').style.display = 'none';
+    ri.innerHTML = keys.map(function(r) {
+      var it = itemsData.find(function(i) { return i.ref === r; });
+      var qt = it.type === 'caisse' ? '1 caisse entière' : selection[r] + ' unité' + (selection[r] > 1 ? 's' : '');
+      return '<div class="srec-row"><span><span class="r">' + r + '</span>' + it.emoji + ' ' + it.nom + '</span><span class="qt">' + qt + '</span></div>';
+    }).join('');
+  } else {
+    document.getElementById('recap-sel').style.display = 'none';
+    document.getElementById('recap-empty').style.display = 'block';
   }
-  const btn = document.querySelector('#reservations .btn-primary');
+  var camp = document.getElementById('cb-camp').value;
+  var dep  = document.getElementById('cb-depart').value;
+  var ret  = document.getElementById('cb-retour').value;
+  if (camp) document.getElementById('res-camp').value = camp;
+  if (dep)  document.getElementById('res-dep').value  = dep;
+  if (ret)  document.getElementById('res-ret').value  = ret;
+  showPage('reservations');
+}
+
+async function envoyerReservation() {
+  var camp = document.getElementById('res-camp').value || document.getElementById('cb-camp').value;
+  var dir  = document.getElementById('res-dir').value;
+  var dep  = document.getElementById('res-dep').value  || document.getElementById('cb-depart').value;
+  var ret  = document.getElementById('res-ret').value  || document.getElementById('cb-retour').value;
+  var notes = document.getElementById('res-notes').value;
+  if (!camp || !dir || !dep || !ret) { alert('Merci de remplir le nom du camp, le directeur et les dates.'); return; }
+  var btn = document.getElementById('btn-envoyer');
   btn.textContent = '⏳ Envoi…'; btn.disabled = true;
   try {
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'addReservation', camp, directeur,
-        dateDepart: dep, dateRetour: ret, notes,
-        materiel: JSON.stringify(Object.keys(selection).map(ref => {
-          const it = itemsData.find(i => i.ref === ref);
-          return { ref, nom: it ? it.nom : ref, qty: selection[ref] };
-        }))
-      })
-    });
+    await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+      action: 'addReservation', camp: camp, directeur: dir,
+      dateDepart: dep, dateRetour: ret, notes: notes,
+      materiel: JSON.stringify(Object.keys(selection).map(function(ref) {
+        var it = itemsData.find(function(i) { return i.ref === ref; });
+        return { ref: ref, nom: it ? it.nom : ref, qty: selection[ref] };
+      }))
+    })});
   } catch(e) {}
-  showSuccess('successRes');
-  Object.keys(selection).forEach(k => delete selection[k]);
+  showSuccess('sb-res');
+  Object.keys(selection).forEach(function(k) { delete selection[k]; });
   updatePanier();
   loadInventaire();
   btn.textContent = 'Envoyer la demande'; btn.disabled = false;
@@ -670,69 +662,246 @@ async function envoyerReservation() {
 
 async function loadReservations() {
   try {
-    const res = await fetch(SCRIPT_URL + '?action=getReservations');
-    const data = await res.json();
-    const tbody = document.getElementById('reservations-tbody');
+    var res = await fetch(SCRIPT_URL + '?action=getReservations');
+    var data = await res.json();
+    var tbody = document.getElementById('res-tbody');
     if (!data.reservations || !data.reservations.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#7a9a80;font-size:13px">Aucune réservation pour le moment.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#7a9a80;font-size:13px">Aucune réservation.</td></tr>';
       return;
     }
-    tbody.innerHTML = data.reservations.map(r => {
-      let mat = '—';
-      try { mat = JSON.parse(r['Matériel']).map(m => m.ref).join(', '); } catch(e) {}
-      const st = r['Statut'] || '—';
-      const bc = st==='Validé' ? 'badge-ok' : st==='Refusé' ? 'badge-alert' : 'badge-warn';
-      return '<tr><td><strong>' + r['Camp'] + '</strong></td><td>' + r['Directeur'] + '</td><td style="font-size:12px">' + mat + '</td><td>' + (r['Dates départ']||'—') + '</td><td>' + (r['Date retour']||'—') + '</td><td><span class="badge ' + bc + '">' + st + '</span></td></tr>';
+    tbody.innerHTML = data.reservations.map(function(r) {
+      var mat = '—';
+      try { mat = JSON.parse(r['Matériel']).map(function(m) { return m.ref; }).join(', '); } catch(e) {}
+      var st = r['Statut'] || '—';
+      var bc = st === 'Validé' ? 'ok' : st === 'Refusé' ? 'alrt' : 'warn';
+      return '<tr><td><strong>' + r['Camp'] + '</strong></td><td>' + r['Directeur'] + '</td><td style="font-size:12px">' + mat + '</td><td>' + (r['Dates départ']||'—') + '</td><td>' + (r['Date retour']||'—') + '</td><td><span class="bdg ' + bc + '">' + st + '</span></td></tr>';
     }).join('');
   } catch(e) {}
 }
 
-// ── FILTRES ───────────────────────────────────────────────────
-function filteredItems() {
-  return itemsData.filter(i => {
-    const cm = !currentCatFilter || i.cat === currentCatFilter;
-    const sm = !currentSearch || i.nom.toLowerCase().includes(currentSearch) || i.ref.toLowerCase().includes(currentSearch);
-    return cm && sm;
+// ── DÉPARTS ───────────────────────────────────────────────────
+async function loadDeparts() {
+  var container = document.getElementById('dep-container');
+  container.innerHTML = '<div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">&#9203; Chargement…</div>';
+  try {
+    var res = await fetch(SCRIPT_URL + '?action=getReservations');
+    var data = await res.json();
+    if (!data.reservations || !data.reservations.length) {
+      container.innerHTML = '<div style="padding:24px;color:#7a9a80;font-size:13px;text-align:center">Aucun départ prévu.</div>';
+      return;
+    }
+    var today = new Date(); today.setHours(0,0,0,0);
+    var aPartir = data.reservations.filter(function(r) {
+      if (r['Statut'] !== 'Validé') return false;
+      var dep = parseDateFR(r['Dates départ']);
+      var diff = (today - dep) / 86400000;
+      return diff <= 1;
+    });
+    if (!aPartir.length) {
+      container.innerHTML = '<div style="padding:24px;color:#7a9a80;font-size:13px;text-align:center">Aucun départ à préparer pour le moment.</div>';
+      return;
+    }
+    container.innerHTML = '';
+    aPartir.forEach(function(r) {
+      var materiel = [];
+      try { materiel = JSON.parse(r['Matériel']); } catch(e) {}
+      var dep = parseDateFR(r['Dates départ']);
+      var isToday = dep.toDateString() === today.toDateString();
+      var total = materiel.length;
+      var card = document.createElement('div');
+      card.className = 'dc';
+      card.innerHTML =
+        '<div class="dc-hd">' +
+          '<div><div class="dc-ttl">🚐 ' + r['Camp'] + ' <span style="font-weight:400;font-size:13px;color:#557a5e">· ' + r['Directeur'] + '</span></div>' +
+          '<div class="dc-meta">Départ ' + (isToday ? '<strong style="color:#1F4E2C">aujourd\'hui</strong>' : 'le ' + r['Dates départ']) + ' · Retour le ' + r['Date retour'] + '</div></div>' +
+          '<span id="prog-lbl-' + r['ID'] + '" style="font-size:13px;color:#7a9a80">0 / ' + total + ' vérifié(s)</span>' +
+        '</div>' +
+        '<div class="dp"><div class="dpb" id="prog-bar-' + r['ID'] + '" style="width:0%"></div></div>';
+      materiel.forEach(function(m, idx) {
+        var loc = itemsData.find(function(i) { return i.ref === m.ref; });
+        var isC = loc && loc.type === 'caisse';
+        var di = document.createElement('div');
+        di.className = 'di';
+        var dck = document.createElement('input'); dck.type = 'checkbox'; dck.className = 'dck';
+        (function(rid, tot, ck, d) {
+          ck.addEventListener('change', function() { updateDepartProgress(rid, tot, ck, d); });
+          d.addEventListener('click', function(e) {
+            if (e.target.type === 'checkbox') return;
+            ck.checked = !ck.checked; ck.dispatchEvent(new Event('change'));
+          });
+        })(r['ID'], total, dck, di);
+        var nameDiv = document.createElement('div');
+        nameDiv.style.flex = '1';
+        nameDiv.innerHTML = '<div class="di-name">' + (isC ? '📦 ' : '') + m.nom + '</div><div class="di-meta"><span class="ref">' + m.ref + '</span>' + (!isC && m.qty > 1 ? ' · ' + m.qty + ' unité(s)' : '') + '</div>';
+        di.appendChild(dck); di.appendChild(nameDiv);
+        card.appendChild(di);
+      });
+      var footer = document.createElement('div');
+      footer.style.cssText = 'padding:12px 20px;border-top:1px solid #e8f0ea;display:flex;justify-content:flex-end;gap:10px;align-items:center';
+      var fbtn = document.createElement('button');
+      fbtn.className = 'btn btn-p btn-sm'; fbtn.textContent = '✅ Confirmer le départ';
+      (function(rid, fb) {
+        fb.addEventListener('click', function() { confirmerDepart(rid, fb); });
+      })(r['ID'], fbtn);
+      footer.appendChild(fbtn);
+      card.appendChild(footer);
+      card.dataset.resId = r['ID'];
+      container.appendChild(card);
+    });
+  } catch(e) {
+    container.innerHTML = '<div style="padding:20px;color:#c07060;font-size:13px;text-align:center">Erreur de chargement.</div>';
+  }
+}
+
+function updateDepartProgress(resId, total, cb, item) {
+  item.classList.toggle('chk', cb.checked);
+  var card = cb.closest('.dc');
+  var checked = card.querySelectorAll('.dck:checked').length;
+  document.getElementById('prog-lbl-' + resId).textContent = checked + ' / ' + total + ' vérifié(s)';
+  document.getElementById('prog-bar-' + resId).style.width = Math.round(checked / total * 100) + '%';
+}
+
+async function confirmerDepart(resId, btn) {
+  btn.textContent = '⏳ Envoi…'; btn.disabled = true;
+  try {
+    await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'updateStatut', id: resId, statut: 'Parti' }) });
+    btn.textContent = '✅ Départ confirmé';
+    btn.closest('.dc').style.opacity = '0.5';
+    setTimeout(function() { loadDeparts(); }, 1500);
+  } catch(e) { btn.textContent = 'Confirmer le départ'; btn.disabled = false; }
+}
+
+// ── RETOURS ───────────────────────────────────────────────────
+async function loadRetours() {
+  var container = document.getElementById('ret-container');
+  container.innerHTML = '<div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">&#9203; Chargement…</div>';
+  try {
+    var res = await fetch(SCRIPT_URL + '?action=getReservations');
+    var data = await res.json();
+    if (!data.reservations || !data.reservations.length) {
+      container.innerHTML = '<div style="padding:24px;color:#7a9a80;font-size:13px;text-align:center">Aucun retour en attente.</div>';
+      return;
+    }
+    var today = new Date(); today.setHours(0,0,0,0);
+    var aTraiter = data.reservations.filter(function(r) {
+      if (r['Statut'] === 'Refusé' || r['Statut'] === 'Retourné' || r['Statut'] === 'En attente') return false;
+      var dep = parseDateFR(r['Dates départ']);
+      return dep <= today;
+    });
+    if (!aTraiter.length) {
+      container.innerHTML = '<div style="padding:24px;color:#7a9a80;font-size:13px;text-align:center">Aucun retour en attente pour le moment.</div>';
+      return;
+    }
+    container.innerHTML = '';
+    aTraiter.forEach(function(r) {
+      var materiel = [];
+      try { materiel = JSON.parse(r['Matériel']); } catch(e) {}
+      var retDate = parseDateFR(r['Date retour']);
+      var enRetard = retDate < today;
+      var card = document.createElement('div');
+      card.className = 'rc-card';
+      card.dataset.resId = r['ID'];
+      card.dataset.camp = r['Camp'];
+      card.dataset.dir = r['Directeur'];
+      card.dataset.mat = r['Matériel'];
+      var succId = 'succ-' + r['ID'];
+      card.innerHTML =
+        '<div class="rc-hd">' +
+          '<div><div class="rc-ttl">&#127957;&#65039; ' + r['Camp'] + ' <span style="font-weight:400;font-size:13px;color:#557a5e">· ' + r['Directeur'] + '</span></div>' +
+          '<div class="rc-meta">Parti le ' + r['Dates départ'] + ' · Retour prévu le <span style="color:' + (enRetard ? '#c07060;font-weight:700' : 'inherit') + '">' + r['Date retour'] + (enRetard ? ' ⚠️' : '') + '</span></div></div>' +
+          '<div style="display:flex;gap:8px;align-items:center"><span class="rc-suc" id="' + succId + '">&#10003;&#65039; Enregistré !</span>' +
+          '<button class="btn btn-p btn-sm" id="btn-ret-' + r['ID'] + '">Valider le retour</button></div>' +
+        '</div>';
+      materiel.forEach(function(m, idx) {
+        var loc = itemsData.find(function(i) { return i.ref === m.ref; });
+        var isC = loc && loc.type === 'caisse';
+        if (isC) {
+          var sl = document.createElement('div');
+          sl.className = 'sec-lbl';
+          sl.textContent = '📦 ' + m.ref + ' — ' + m.nom;
+          card.appendChild(sl);
+        }
+        var art = document.createElement('div');
+        art.className = 'ra';
+        art.innerHTML =
+          '<div class="ra-name">' + (!isC ? '<span class="ref">' + m.ref + '</span> ' : '') + m.nom + (!isC && m.qty > 1 ? ' <span style="color:#7a9a80;font-size:12px">× ' + m.qty + ' partis</span>' : '') + '</div>' +
+          '<div class="rfs">' +
+            (!isC ? '<div class="rf" style="max-width:100px"><label>Qté retournée</label><input type="number" id="qte-' + r['ID'] + '-' + idx + '" value="' + m.qty + '" min="0" max="' + m.qty + '"></div>' : '') +
+            '<div class="rf" style="max-width:200px"><label>État</label><select id="etat-' + r['ID'] + '-' + idx + '">' +
+              '<option value="✅ Bon état">✅ Bon état</option>' +
+              '<option value="⚠️ Usure légère">⚠️ Usure légère</option>' +
+              '<option value="🔧 À réparer">🔧 À réparer</option>' +
+              '<option value="❌ Hors service">❌ Hors service</option>' +
+              (isC ? '<option value="⚠️ Incomplète">⚠️ Incomplète</option>' : '') +
+            '</select></div>' +
+            '<div class="rf"><label>Observations</label><input type="text" id="obs-' + r['ID'] + '-' + idx + '" placeholder="Casse, manque…"></div>' +
+          '</div>';
+        card.appendChild(art);
+      });
+      card.dataset.matLen = materiel.length;
+      container.appendChild(card);
+      // Attacher le bouton valider APRES avoir ajouté la card au DOM
+      var btnRet = document.getElementById('btn-ret-' + r['ID']);
+      if (btnRet) {
+        (function(rid, mat, c) {
+          btnRet.addEventListener('click', function() { validerRetour(rid, mat, c, this); });
+        })(r['ID'], materiel, card);
+      }
+    });
+  } catch(e) {
+    container.innerHTML = '<div style="padding:20px;color:#c07060;font-size:13px;text-align:center">Erreur de chargement.</div>';
+  }
+}
+
+async function validerRetour(resId, materiel, card, btn) {
+  var articles = materiel.map(function(m, idx) {
+    return {
+      ref: m.ref, nom: m.nom,
+      qteRetournee: (document.getElementById('qte-' + resId + '-' + idx) || {value: m.qty}).value,
+      etat: (document.getElementById('etat-' + resId + '-' + idx) || {value: '✅ Bon état'}).value,
+      observations: (document.getElementById('obs-' + resId + '-' + idx) || {value: ''}).value
+    };
   });
-}
-function filterCat(cat, chip) {
-  currentCatFilter = cat;
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-  chip.classList.add('active');
-  renderTable();
-}
-function filterTable(val) { currentSearch = val.toLowerCase(); renderTable(); }
-
-// ── MODAL CONTENU ─────────────────────────────────────────────
-function openContenu(ref) {
-  // Chercher d'abord dans itemsData (données Sheet), fallback sur local
-  const it = itemsData.find(i => i.ref === ref) || ITEMS_LOCAL.find(i => i.ref === ref);
-  if (!it || !it.contenu) return;
-  document.getElementById('cm-title').textContent = it.nom;
-  document.getElementById('cm-sub').textContent = it.ref + ' · Contenu référencé';
-  document.getElementById('cm-list').innerHTML = it.contenu.map(c => '<li><span class="contenu-dot"></span>' + c + '</li>').join('');
-  document.getElementById('contenuModal').classList.add('open');
-}
-function closeContenu() { document.getElementById('contenuModal').classList.remove('open'); }
-
-// ── NAVIGATION ────────────────────────────────────────────────
-function showPage(id, tab) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if (tab) tab.classList.add('active');
-  if (id === 'reservations') loadReservations();
-  if (id === 'departs') loadDeparts();
-  if (id === 'retours') loadRetours();
-}
-function showSuccess(id) {
-  const el = document.getElementById(id);
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 4000);
+  btn.textContent = '⏳ Envoi…'; btn.disabled = true;
+  try {
+    await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+      action: 'addRetour', reservationId: resId,
+      camp: card.dataset.camp, directeur: card.dataset.dir, articles: articles
+    })});
+    await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'updateStatut', id: resId, statut: 'Retourné' }) });
+    document.getElementById('succ-' + resId).classList.add('show');
+    btn.style.display = 'none';
+    setTimeout(function() { loadRetours(); }, 2000);
+  } catch(e) { btn.textContent = 'Valider le retour'; btn.disabled = false; }
 }
 
 // ── INIT ──────────────────────────────────────────────────────
-loadInventaire();
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('tab-inv').addEventListener('click', function() { showPage('inventaire'); });
+  document.getElementById('tab-res').addEventListener('click', function() { showPage('reservations'); });
+  document.getElementById('tab-dep').addEventListener('click', function() { showPage('departs'); });
+  document.getElementById('tab-ret').addEventListener('click', function() { showPage('retours'); });
+  document.getElementById('tab-his').addEventListener('click', function() { showPage('historique'); });
+  document.getElementById('check-all').addEventListener('change', function() { toggleAll(this); });
+  document.getElementById('pan-clr').addEventListener('click', clearSelection);
+  document.getElementById('pan-btn').addEventListener('click', goToReservation);
+  document.getElementById('btn-envoyer').addEventListener('click', envoyerReservation);
+  document.getElementById('btn-modif').addEventListener('click', function() { showPage('inventaire'); });
+  document.getElementById('mo-cls').addEventListener('click', function() { document.getElementById('mo-contenu').classList.remove('open'); });
+  document.getElementById('mo-ok').addEventListener('click', function() { document.getElementById('mo-contenu').classList.remove('open'); });
+  document.getElementById('mo-contenu').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+  document.getElementById('cb-depart').addEventListener('change', onDatesChange);
+  document.getElementById('cb-retour').addEventListener('change', onDatesChange);
+  document.querySelectorAll('.chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('active'); });
+      chip.classList.add('active');
+      catFilter = chip.dataset.cat;
+      renderTable();
+    });
+  });
+  loadInventaire();
+});
 </script>
 </body>
 </html>
