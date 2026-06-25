@@ -3,10 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GDJV – Inventaire 2026</title>
+<title>MatéCamp – Inventaire 2026</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F0F4F1; color: #1a2e1e; min-height: 100vh; }
+.camp-bar { background: #fff; border-bottom: 2px solid #e8f0ea; padding: 0 24px; height: 48px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 40; box-shadow: 0 1px 4px rgba(0,0,0,.06); flex-wrap: wrap; }
+.camp-bar-label { font-size: 12px; font-weight: 700; color: #7a9a80; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; }
+.camp-bar input[type="text"] { border: 1.5px solid #c3d8c7; border-radius: 7px; padding: 5px 10px; font-size: 13px; font-family: inherit; color: #1a2e1e; background: #f8fdf9; outline: none; width: 180px; }
+.camp-bar input[type="date"] { border: 1.5px solid #c3d8c7; border-radius: 7px; padding: 5px 10px; font-size: 13px; font-family: inherit; color: #1a2e1e; background: #f8fdf9; outline: none; width: 145px; }
+.camp-bar input:focus { border-color: #4CAF6F; background: #fff; }
+.camp-bar-sep { width: 1px; height: 24px; background: #e8f0ea; }
+.camp-bar-status { font-size: 12px; color: #7a9a80; white-space: nowrap; }
+.camp-bar-status.has-conflit { color: #8a5500; font-weight: 700; }
 nav { background: #1F4E2C; padding: 0 24px; display: flex; align-items: center; height: 52px; gap: 0; }
 .nav-logo { color: #fff; font-weight: 700; font-size: 15px; margin-right: 32px; display: flex; align-items: center; gap: 8px; }
 .nav-logo span { background: #4CAF6F; color: #fff; border-radius: 6px; padding: 2px 7px; font-size: 11px; font-weight: 800; letter-spacing: 1px; }
@@ -126,12 +134,25 @@ textarea { resize: vertical; min-height: 60px; }
 </head>
 <body>
 <nav>
-  <div class="nav-logo">🏕️ GDJV <span>2026</span></div>
+  <div class="nav-logo">🏕️ MatéCamp <span>2026</span></div>
   <div class="nav-tab active" onclick="showPage('inventaire',this)">Inventaire</div>
   <div class="nav-tab" onclick="showPage('reservations',this)">Réservations</div>
   <div class="nav-tab" onclick="showPage('retours',this)">Retours &amp; État</div>
   <div class="nav-tab" onclick="showPage('historique',this)">Historique</div>
 </nav>
+
+<div class="camp-bar" id="camp-bar">
+  <span class="camp-bar-label">🏕️ Camp</span>
+  <input type="text" id="cb-camp" placeholder="Nom du camp…" oninput="syncCampBar()">
+  <div class="camp-bar-sep"></div>
+  <span class="camp-bar-label">Départ</span>
+  <input type="date" id="cb-depart" onchange="syncCampBar();onDatesChange()">
+  <span class="camp-bar-label">Retour</span>
+  <input type="date" id="cb-retour" onchange="syncCampBar();onDatesChange()">
+  <div class="camp-bar-sep"></div>
+  <span class="camp-bar-status" id="cb-status">Saisissez les dates pour voir les disponibilités</span>
+</div>
+
 <main>
 
 <!-- INVENTAIRE -->
@@ -382,9 +403,22 @@ function etatBadge(e) {
 // Références déjà réservées sur les dates sélectionnées
 let conflits = new Set();
 
+function syncCampBar() {
+  const camp = document.getElementById('cb-camp').value;
+  const depart = document.getElementById('cb-depart').value;
+  const retour = document.getElementById('cb-retour').value;
+  // Synchroniser vers le formulaire de réservation
+  const resCamp = document.getElementById('res-camp');
+  const resDepart = document.getElementById('res-depart');
+  const resRetour = document.getElementById('res-retour');
+  if(resCamp && camp) resCamp.value = camp;
+  if(resDepart && depart) resDepart.value = depart;
+  if(resRetour && retour) resRetour.value = retour;
+}
+
 function onDatesChange() {
-  const depart = document.getElementById('res-depart').value;
-  const retour = document.getElementById('res-retour').value;
+  const depart = document.getElementById('cb-depart').value || document.getElementById('res-depart').value;
+  const retour = document.getElementById('cb-retour').value || document.getElementById('res-retour').value;
   if (!depart || !retour) {
     conflits = new Set();
     document.getElementById('dispo-banner').style.display = 'none';
@@ -420,6 +454,22 @@ async function checkConflits(depart, retour) {
 
   const banner = document.getElementById('dispo-banner');
   banner.style.display = conflits.size > 0 ? 'block' : 'none';
+  // Mettre à jour le statut dans la barre
+  const status = document.getElementById('cb-status');
+  if(status) {
+    if(conflits.size > 0) {
+      status.textContent = '⚠️ ' + conflits.size + ' article(s) déjà réservé(s) sur ces dates';
+      status.className = 'camp-bar-status has-conflit';
+    } else {
+      const depart = document.getElementById('cb-depart').value;
+      const retour = document.getElementById('cb-retour').value;
+      if(depart && retour) {
+        status.textContent = '✅ Tout le matériel est disponible sur ces dates';
+        status.className = 'camp-bar-status';
+        status.style.color = '#1a6b2f';
+      }
+    }
+  }
   renderTable(filteredItems());
 }
 
@@ -554,10 +604,8 @@ function goToReservation() {
     document.getElementById('recap-empty').style.display='block';
   }
   showPage('reservations',null);
-  // Re-vérifier les conflits si dates déjà remplies
-  const d = document.getElementById('res-depart');
-  const r = document.getElementById('res-retour');
-  if(d && r && d.value && r.value) checkConflits(d.value, r.value);
+  // Synchroniser la barre vers le formulaire
+  syncCampBar();
   document.querySelectorAll('.nav-tab').forEach((t,i)=>{t.classList.toggle('active',i===1);});
 }
 
