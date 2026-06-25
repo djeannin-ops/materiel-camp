@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MatéCamp 2026</title>
+<title>GDJV 2026</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F4F1;color:#1a2e1e;min-height:100vh}
@@ -149,7 +149,7 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
 <body>
 
 <nav>
-  <div class="nav-logo">&#127957;&#65039; MatéCamp <span>2026</span></div>
+  <div class="nav-logo">&#127957;&#65039; GDJV <span>2026</span></div>
   <div class="nav-tab active" id="tab-inv">Inventaire</div>
   <div class="nav-tab" id="tab-res">Réservations</div>
   <div class="nav-tab" id="tab-dep">Départs</div>
@@ -227,7 +227,7 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
   <div class="card">
     <div class="card-hd"><h2>Réservations en cours</h2></div>
     <table>
-      <thead><tr><th>Camp</th><th>Directeur</th><th>Matériel</th><th>Départ</th><th>Retour</th><th>Statut</th></tr></thead>
+      <thead><tr><th>Camp</th><th>Directeur</th><th>Matériel</th><th>Départ</th><th>Retour</th><th>Statut</th><th></th></tr></thead>
       <tbody id="res-tbody"><tr><td colspan="6" style="text-align:center;padding:20px;color:#7a9a80;font-size:13px">Aucune réservation.</td></tr></tbody>
     </table>
   </div>
@@ -251,31 +251,19 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
   </div>
 </div>
 
-</main>
-
-<div class="panier" id="panier">
-  <div>
-    <div><span class="pan-cnt" id="pan-cnt">0</span> <span id="pan-lbl">article sélectionné</span></div>
-    <div class="pan-det" id="pan-det"></div>
-  </div>
-  <div class="pan-acts">
-    <button class="pan-clr" id="pan-clr">Tout désélectionner</button>
-    <button class="pan-btn" id="pan-btn">Réserver cette sélection &#8594;</button>
-  </div>
-</div>
-
-<div id="mo-contenu" class="mo">
-  <div class="modal">
+<div id="mo-modif" class="mo">
+  <div class="modal" style="max-width:560px">
     <div class="mo-hd">
-      <div><h3 id="mo-title"></h3><div class="mo-sub" id="mo-sub"></div></div>
-      <button class="mo-cls" id="mo-cls">&#10005;</button>
+      <div><h3>Modifier la réservation</h3><div class="mo-sub" id="mo-modif-id"></div></div>
+      <button class="mo-cls" id="mo-modif-cls">&#10005;</button>
     </div>
-    <div class="mo-body"><ul class="cl" id="mo-list"></ul></div>
-    <div class="mo-ft"><button class="btn btn-p" id="mo-ok">Fermer</button></div>
-  </div>
-</div>
-
-<script>
+    <div class="mo-body">
+      <div class="fg" style="padding:0">
+        <div class="g"><label>Nom du camp</label><input type="text" id="modif-camp"></div>
+        <div class="g"><label>Directeur</label><input type="text" id="modif-dir"></div>
+        <div class="g"><label>Date de départ</label><input type="date" id="modif-dep"></div>
+        <div class="g"><label>Date de retour</label><input type="date" id="modif-ret"></div>
+        <div class="g full"><label>Notes</label><textarea id="modif-notes" style="min<script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWQRuW2W-nmNfc4B2U5ok1e15O3WgB-ejfxdy7QDU-67cfU4i9UbeB57z9VEgRMHz_Hg/exec';
 const CAT_LABELS = {tentes:'Tentes',cuisine:'Cuisine',sport:'Sport',bureau:'Bureautique',camping:'Camping',loisirs:'Loisirs',linge:'Linge',mobilier:'Mobilier',divers:'Divers',hygiene:'Hygiene'};
 const CAT_REV = {Tentes:'tentes',Cuisine:'cuisine',Sport:'sport',Bureautique:'bureau',Camping:'camping',Loisirs:'loisirs',Linge:'linge',Mobilier:'mobilier',Divers:'divers',Hygiene:'hygiene'};
@@ -674,7 +662,8 @@ async function loadReservations() {
       try { mat = JSON.parse(r['Matériel']).map(function(m) { return m.ref; }).join(', '); } catch(e) {}
       var st = r['Statut'] || '—';
       var bc = st === 'Validé' ? 'ok' : st === 'Refusé' ? 'alrt' : 'warn';
-      return '<tr><td><strong>' + r['Camp'] + '</strong></td><td>' + r['Directeur'] + '</td><td style="font-size:12px">' + mat + '</td><td>' + (r['Dates départ']||'—') + '</td><td>' + (r['Date retour']||'—') + '</td><td><span class="bdg ' + bc + '">' + st + '</span></td></tr>';
+      var canEdit = (st === 'En attente' || st === 'Validé');
+      return '<tr><td><strong>' + r['Camp'] + '</strong></td><td>' + r['Directeur'] + '</td><td style="font-size:12px">' + mat + '</td><td>' + (r['Dates départ']||'—') + '</td><td>' + (r['Date retour']||'—') + '</td><td><span class="bdg ' + bc + '">' + st + '</span></td><td>' + (canEdit ? '<button class="btn btn-o btn-sm" onclick="ouvrirModif(' + JSON.stringify(r) + ')">✏️</button>' : '') + '</td></tr>';
     }).join('');
   } catch(e) {}
 }
@@ -875,6 +864,88 @@ async function validerRetour(resId, materiel, card, btn) {
   } catch(e) { btn.textContent = 'Valider le retour'; btn.disabled = false; }
 }
 
+// ── MODIFICATION RÉSERVATION ─────────────────────────────────
+var currentModifId = null;
+var currentModifData = null;
+
+function ouvrirModif(r) {
+  currentModifId = r['ID'];
+  currentModifData = r;
+  document.getElementById('mo-modif-id').textContent = r['ID'] + ' · ' + r['Camp'];
+  document.getElementById('modif-camp').value = r['Camp'] || '';
+  document.getElementById('modif-dir').value = r['Directeur'] || '';
+  document.getElementById('modif-dep').value = formatDateInput(r['Dates départ']);
+  document.getElementById('modif-ret').value = formatDateInput(r['Date retour']);
+  document.getElementById('modif-notes').value = r['Notes'] || '';
+  try {
+    var mat = JSON.parse(r['Matériel']).map(function(m) { return m.qty > 1 ? m.ref + 'x' + m.qty : m.ref; }).join(', ');
+    document.getElementById('modif-mat').value = mat;
+  } catch(e) { document.getElementById('modif-mat').value = ''; }
+  document.getElementById('mo-modif').classList.add('open');
+}
+
+function formatDateInput(s) {
+  if (!s) return '';
+  if (s.includes('/')) { var p = s.split('/'); return p[2] + '-' + p[1].padStart(2,'0') + '-' + p[0].padStart(2,'0'); }
+  return s;
+}
+
+async function sauvegarderModif() {
+  if (!currentModifId) return;
+  var btn = document.getElementById('btn-modif-save');
+  btn.textContent = '⏳ Envoi…'; btn.disabled = true;
+  var matText = document.getElementById('modif-mat').value;
+  var matParsed = matText.split(',').map(function(s) {
+    s = s.trim();
+    var parts = s.split(/[x×]/i);
+    return { ref: parts[0].trim(), nom: parts[0].trim(), qty: parseInt(parts[1]) || 1 };
+  }).filter(function(m) { return m.ref; });
+  try {
+    await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+      action: 'updateReservation',
+      id: currentModifId,
+      camp: document.getElementById('modif-camp').value,
+      directeur: document.getElementById('modif-dir').value,
+      dateDepart: document.getElementById('modif-dep').value,
+      dateRetour: document.getElementById('modif-ret').value,
+      notes: document.getElementById('modif-notes').value,
+      materiel: JSON.stringify(matParsed)
+    })});
+    document.getElementById('mo-modif').classList.remove('open');
+    loadReservations();
+  } catch(e) {}
+  btn.textContent = 'Enregistrer'; btn.disabled = false;
+}
+
+// ── HISTORIQUE ────────────────────────────────────────────────
+async function loadHistorique() {
+  var tl = document.getElementById('his-tl');
+  tl.innerHTML = '<div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">&#9203; Chargement…</div>';
+  try {
+    var res = await fetch(SCRIPT_URL + '?action=getHistorique');
+    var data = await res.json();
+    if (!data.mouvements || !data.mouvements.length) {
+      tl.innerHTML = '<div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">Aucun mouvement enregistré.</div>';
+      return;
+    }
+    var icons = { 'Réservation':'📋','Modification':'✏️','Validé':'✅','Parti':'🚐','Retour':'📦','Retourné':'📦','Refusé':'❌' };
+    var dotClass = { 'Réservation':'out','Modification':'out','Validé':'out','Parti':'out','Retour':'in','Retourné':'in','Refusé':'iss','Refusé':'iss' };
+    tl.innerHTML = data.mouvements.map(function(m) {
+      var type = m['Type'] || '';
+      var icon = icons[type] || '🔹';
+      var dc = dotClass[type] || 'out';
+      return '<div class="tl-item">' +
+        '<div class="tl-dot ' + dc + '"></div>' +
+        '<div><div class="tl-ttl">' + icon + ' ' + type + ' — ' + (m['Camp']||'') + ' · ' + (m['Directeur']||'') + '</div>' +
+        '<div class="tl-sub">' + (m['Détail']||'') + ' · ' + (m['Date']||'') + '</div>' +
+        '<div style="margin-top:4px"><span class="ref">' + (m['Réservation ID']||'') + '</span></div></div>' +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    tl.innerHTML = '<div style="padding:20px;color:#c07060;font-size:13px;text-align:center">Erreur de chargement.</div>';
+  }
+}
+
 // ── INIT ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('tab-inv').addEventListener('click', function() { showPage('inventaire'); });
@@ -884,6 +955,29 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('tab-his').addEventListener('click', function() { showPage('historique'); });
   document.getElementById('check-all').addEventListener('change', function() { toggleAll(this); });
   document.getElementById('pan-clr').addEventListener('click', clearSelection);
+  document.getElementById('pan-btn').addEventListener('click', goToReservation);
+  document.getElementById('btn-envoyer').addEventListener('click', envoyerReservation);
+  document.getElementById('btn-modif').addEventListener('click', function() { showPage('inventaire'); });
+  document.getElementById('mo-cls').addEventListener('click', function() { document.getElementById('mo-contenu').classList.remove('open'); });
+  document.getElementById('mo-ok').addEventListener('click', function() { document.getElementById('mo-contenu').classList.remove('open'); });
+  document.getElementById('mo-contenu').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+  document.getElementById('cb-depart').addEventListener('change', onDatesChange);
+  document.getElementById('cb-retour').addEventListener('change', onDatesChange);
+  document.querySelectorAll('.chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('active'); });
+      chip.classList.add('active');
+      catFilter = chip.dataset.cat;
+      renderTable();
+    });
+  });
+  loadInventaire();
+  document.getElementById('mo-modif-cls').addEventListener('click', function() { document.getElementById('mo-modif').classList.remove('open'); });
+  document.getElementById('btn-modif-cancel').addEventListener('click', function() { document.getElementById('mo-modif').classList.remove('open'); });
+  document.getElementById('btn-modif-save').addEventListener('click', sauvegarderModif);
+  document.getElementById('mo-modif').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+});
+</script>earSelection);
   document.getElementById('pan-btn').addEventListener('click', goToReservation);
   document.getElementById('btn-envoyer').addEventListener('click', envoyerReservation);
   document.getElementById('btn-modif').addEventListener('click', function() { showPage('inventaire'); });
