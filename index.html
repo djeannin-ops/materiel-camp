@@ -22,7 +22,8 @@ nav{background:#1F4E2C;padding:0 24px;display:flex;align-items:center;height:52p
 .nav-dropdown .nav-tab.active{border-left-color:#4CAF6F;border-bottom-color:transparent}
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 @media(max-width:640px){
-  .nav-tab{display:none}
+  nav > .nav-tab{display:none}
+  #nav-dropdown .nav-tab{display:flex}
   .nav-burger{display:flex}
   .nav-active-lbl{display:block}
   .camp-bar{flex-wrap:nowrap;gap:8px;padding:0 12px}
