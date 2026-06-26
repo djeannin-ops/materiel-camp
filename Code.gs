@@ -65,10 +65,12 @@ function getInventaire() {
 }
 
 function updateDisponible(ref, delta) {
+  // Colonne Disponible supprimée — disponibilité calculée dynamiquement depuis les réservations
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Inventaire');
   const cols = colMap(sheet);
-  const colRef = cols['Référence'] || cols['Reference'] || 1;
-  const colDispo = cols['Disponible'] || 6;
+  const colDispo = cols['disponible'];
+  if (!colDispo) return; // colonne absente, rien à faire
+  const colRef = cols['référence'] || cols['reference'] || 1;
   const rows = sheet.getDataRange().getValues();
   for (let i = 1; i < rows.length; i++) {
     if (rows[i][colRef - 1] === ref) {
@@ -265,7 +267,6 @@ function confirmerDepart(data) {
     if (rows[i][colId - 1] === data.id) {
       if (colMatDep) sheet.getRange(i + 1, colMatDep).setValue(JSON.stringify(data.materielAuDepart || []));
       sheet.getRange(i + 1, colStatut).setValue('Parti');
-      (data.materielAuDepart || []).forEach(m => updateDisponible(m.ref, -(parseInt(m.qty) || 1)));
       logHistorique('Parti', data.id, rows[i][cols['Camp'] - 1] || rows[i][2],
         rows[i][cols['Directeur'] - 1] || rows[i][3],
         'Départ confirmé — ' + (data.materielAuDepart || []).length + ' article(s)');
@@ -290,12 +291,8 @@ function addRetour(data) {
     });
   } catch(e) { errors.push('Retours: ' + e.message); }
 
-  // 2. Mise à jour Disponible + Notes inventaire
+  // 2. Notes inventaire
   data.articles.forEach(article => {
-    try {
-      const qte = parseInt(article.qteRetournee) || 0;
-      if (qte > 0) updateDisponible(article.ref, qte);
-    } catch(e) { errors.push('Dispo ' + article.ref + ': ' + e.message); }
     try {
       if (article.observations && String(article.observations).trim()) {
         appendNote(article.ref, String(article.observations).trim());
