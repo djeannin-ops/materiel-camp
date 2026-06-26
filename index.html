@@ -325,6 +325,10 @@ var selection = {}, catFilter = "", searchFilter = "";
 var currentModifId = null, currentModifMat = null;
 var currentNotesRef = null;
 
+function normSt(s) {
+  return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z]/g,"");
+}
+
 function parseDateFR(s) {
   if (!s) return new Date("invalid");
   if (typeof s === "string" && s.indexOf("/") >= 0) {
@@ -502,8 +506,8 @@ async function checkDispoParDates(dep, ret) {
     if (data.reservations && data.reservations.length) {
       var d1 = new Date(dep), d2 = new Date(ret);
       data.reservations.forEach(function(r) {
-        var st = (r["Statut"] || "").toLowerCase().replace(/[^a-z]/g, "");
-        if (st === "refusé" || st === "refuse" || st === "retourné" || st === "retourne") return;
+        var st = normSt(r["Statut"]);
+        if (st === "refuse" || st === "retourne") return;
         var rd1 = parseDateFR(r["Dates départ"] || r["Dates depart"]);
         var rd2 = parseDateFR(r["Date retour"]);
         if (d1 <= rd2 && d2 >= rd1) {
@@ -718,7 +722,7 @@ async function loadReservations() {
       var mat = "-";
       try { mat = JSON.parse(r["Matériel"] || r["Materiel"] || "[]").map(function(m){ return m.ref; }).join(", "); } catch(e) {}
       var st = r["Statut"] || "-";
-      var stClean = st.toLowerCase().replace(/[^a-z]/g, ""); var bc = stClean==="valide"?"ok":(stClean==="refuse"?"alrt":"warn");
+      var stClean = normSt(st); var bc = stClean==="valide"?"ok":(stClean==="refuse"?"alrt":"warn");
       var canEdit = (st==="En attente" || stClean==="valide");
       var tr = document.createElement("tr");
       tr.innerHTML = "<td><strong>"+(r["Camp"]||"")+"</strong></td>"
@@ -784,8 +788,7 @@ async function loadDeparts() {
     var res = await fetch(SCRIPT_URL+"?action=getReservations");
     var data = await res.json();
     var liste = (data.reservations || []).filter(function(r) {
-      var st = (r["Statut"] || "").toLowerCase().replace(/[^a-z]/g, "");
-      return st === "valide";
+      return normSt(r["Statut"]) === "valide";
     });
     if (!liste.length) { container.innerHTML = '<div style="padding:24px;color:#7a9a80;font-size:13px;text-align:center">Aucun depart a preparer.</div>'; return; }
     container.innerHTML = "";
@@ -891,8 +894,7 @@ async function loadRetours() {
     var res = await fetch(SCRIPT_URL+"?action=getReservations");
     var data = await res.json();
     var liste = (data.reservations || []).filter(function(r) {
-      var st = (r["Statut"] || "").toLowerCase().replace(/[^a-z]/g, "");
-      return st === "parti";
+      return normSt(r["Statut"]) === "parti";
     });
     if (!liste.length) { container.innerHTML = '<div style="padding:24px;color:#7a9a80;font-size:13px;text-align:center">Aucun retour en attente.</div>'; return; }
     container.innerHTML = "";
