@@ -19,6 +19,7 @@ function doPost(e) {
   else if (action === 'confirmerDepart')   result = confirmerDepart(data);
   else if (action === 'addRetour')         result = addRetour(data);
   else if (action === 'addCommentaire')    result = addCommentaire(data);
+  else if (action === 'updateEtat')        result = updateEtat(data);
   else result = { error: 'Action inconnue' };
   return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
 }
@@ -93,6 +94,23 @@ function appendNote(ref, texte) {
       return;
     }
   }
+}
+
+function updateEtat(data) {
+  if (!data.ref || !data.etat) return { error: 'Données manquantes' };
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Inventaire');
+  const cols = colMap(sheet);
+  const colRef = cols['référence'] || cols['reference'] || 1;
+  const colEtat = cols['état'] || cols['etat'];
+  if (!colEtat) return { error: 'Colonne État introuvable' };
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][colRef - 1] === data.ref) {
+      sheet.getRange(i + 1, colEtat).setValue(data.etat);
+      return { success: true };
+    }
+  }
+  return { error: 'Article non trouvé' };
 }
 
 function addCommentaire(data) {
@@ -187,6 +205,30 @@ function addReservation(data) {
   sheet.appendRow(row);
 
   logHistorique('Réservation', id, data.camp, data.directeur, 'Nouvelle demande — départ ' + data.dateDepart);
+
+  // Notification email
+  try {
+    const destinataire = 'denis.jeannin@etictelecom.com';
+    let materielListe = '';
+    try {
+      materielListe = JSON.parse(data.materiel || '[]').map(m => '  - ' + m.nom + (m.qty > 1 ? ' x' + m.qty : '')).join('\n');
+    } catch(e) {}
+    const sujet = '[GDJV] Nouvelle demande de réservation — ' + data.camp;
+    const corps =
+      'Nouvelle demande de réservation reçue.\n\n' +
+      'Camp : ' + data.camp + '\n' +
+      'Directeur : ' + data.directeur + '\n' +
+      'Départ : ' + data.dateDepart + '\n' +
+      'Retour : ' + data.dateRetour + '\n' +
+      (data.notes ? 'Notes : ' + data.notes + '\n' : '') +
+      '\nMatériel demandé :\n' + materielListe + '\n\n' +
+      'Référence : ' + id + '\n' +
+      'À valider dans Google Sheets (colonne Statut → Validé).';
+    MailApp.sendEmail(destinataire, sujet, corps);
+  } catch(e) {
+    // L'email échoue silencieusement — ne bloque pas la réservation
+  }
+
   return { success: true, id };
 }
 
