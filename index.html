@@ -697,10 +697,8 @@ function goToReservation() {
     document.getElementById("recap-sel").style.display = "none";
     document.getElementById("recap-empty").style.display = "block";
   }
-  var camp = document.getElementById("cb-camp").value;
   var dep = document.getElementById("cb-depart").value;
   var ret = document.getElementById("cb-retour").value;
-  if (camp) document.getElementById("res-camp").value = camp;
   if (dep) document.getElementById("res-dep").value = dep;
   if (ret) document.getElementById("res-ret").value = ret;
   showPage("reservations");
@@ -1027,16 +1025,18 @@ document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("tab-ret").addEventListener("click", function(){ showPage("retours"); });
   document.getElementById("tab-his").addEventListener("click", function(){ showPage("historique"); });
   // Burger menu
-  document.getElementById("nav-burger").addEventListener("click", function(){
-    document.getElementById("nav-dropdown").classList.toggle("open");
+  var _dd = document.getElementById("nav-dropdown");
+  document.getElementById("nav-burger").addEventListener("click", function(e){
+    e.stopPropagation();
+    _dd.classList.toggle("open");
   });
+  _dd.addEventListener("click", function(e){ e.stopPropagation(); });
   document.querySelectorAll("#nav-dropdown .nav-tab").forEach(function(t){
-    t.addEventListener("click", function(){ showPage({"tab-inv":"inventaire","tab-res":"reservations","tab-dep":"departs","tab-ret":"retours","tab-his":"historique"}[t.dataset.dd]); });
+    t.addEventListener("click", function(){
+      showPage({"tab-inv":"inventaire","tab-res":"reservations","tab-dep":"departs","tab-ret":"retours","tab-his":"historique"}[t.dataset.dd]);
+    });
   });
-  document.addEventListener("click", function(e){
-    if(!e.target.closest("#nav-burger") && !e.target.closest("#nav-dropdown"))
-      document.getElementById("nav-dropdown").classList.remove("open");
-  });
+  document.addEventListener("click", function(){ _dd.classList.remove("open"); });
   document.getElementById("check-all").addEventListener("change", function(){ toggleAll(this); });
   document.getElementById("pan-clr").addEventListener("click", clearSelection);
   document.getElementById("pan-btn").addEventListener("click", goToReservation);
