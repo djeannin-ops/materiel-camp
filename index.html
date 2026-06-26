@@ -13,6 +13,31 @@ nav{background:#1F4E2C;padding:0 24px;display:flex;align-items:center;height:52p
 .nav-tab{color:#a8c9b0;font-size:14px;padding:0 16px;height:52px;display:flex;align-items:center;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;user-select:none}
 .nav-tab:hover{color:#fff}
 .nav-tab.active{color:#fff;border-bottom-color:#4CAF6F}
+.nav-burger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:52px;cursor:pointer;margin-left:auto;flex-shrink:0}
+.nav-burger span{display:block;height:2px;background:#fff;border-radius:2px;transition:all .2s}
+.nav-active-lbl{display:none;color:#fff;font-size:14px;font-weight:600;flex:1;text-align:right;padding-right:8px}
+.nav-dropdown{display:none;position:fixed;top:52px;left:0;right:0;background:#1F4E2C;z-index:49;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.nav-dropdown.open{display:block}
+.nav-dropdown .nav-tab{height:44px;padding:0 24px;border-bottom:1px solid rgba(255,255,255,.08);border-left:3px solid transparent}
+.nav-dropdown .nav-tab.active{border-left-color:#4CAF6F;border-bottom-color:transparent}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:640px){
+  .nav-tab{display:none}
+  .nav-burger{display:flex}
+  .nav-active-lbl{display:block}
+  .camp-bar{flex-wrap:nowrap;gap:8px;padding:0 12px}
+  .camp-bar input[type=text]{width:120px}
+  main{padding:16px 12px 80px}
+  .stats{gap:8px}
+  .stat{min-width:80px;padding:10px 12px}
+  .stat .num{font-size:20px}
+  .toolbar{padding:10px 12px;gap:6px}
+  .chip{font-size:11px;padding:3px 9px}
+  th,td{padding:7px 10px;font-size:12px}
+  .fg{grid-template-columns:1fr;padding:14px}
+  .dc-hd{flex-direction:column;align-items:flex-start}
+  .rc-hd{flex-direction:column;align-items:flex-start}
+}
 .camp-bar{background:#fff;border-bottom:2px solid #e8f0ea;padding:0 24px;height:50px;display:flex;align-items:center;gap:12px;position:sticky;top:52px;z-index:40;box-shadow:0 2px 6px rgba(0,0,0,.06);overflow-x:auto}
 .cb-label{font-size:12px;font-weight:700;color:#7a9a80;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
 .cb-sep{width:1px;height:22px;background:#e0eae2;flex-shrink:0}
@@ -164,12 +189,18 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
   <div class="nav-tab" id="tab-dep">Departs</div>
   <div class="nav-tab" id="tab-ret">Retours</div>
   <div class="nav-tab" id="tab-his">Historique</div>
+  <span class="nav-active-lbl" id="nav-active-lbl">Inventaire</span>
+  <div class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></div>
 </nav>
+<div class="nav-dropdown" id="nav-dropdown">
+  <div class="nav-tab active" data-dd="tab-inv">Inventaire</div>
+  <div class="nav-tab" data-dd="tab-res">Reservations</div>
+  <div class="nav-tab" data-dd="tab-dep">Departs</div>
+  <div class="nav-tab" data-dd="tab-ret">Retours</div>
+  <div class="nav-tab" data-dd="tab-his">Historique</div>
+</div>
 
 <div class="camp-bar">
-  <span class="cb-label">Camp</span>
-  <input type="text" id="cb-camp" placeholder="Nom du camp">
-  <div class="cb-sep"></div>
   <span class="cb-label">Depart</span>
   <input type="date" id="cb-depart">
   <span class="cb-label">Retour</span>
@@ -198,14 +229,14 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
       <div class="chip" data-cat="divers">Divers</div>
       <div class="chip" data-cat="hygiene">Hygiene</div>
     </div>
-    <table>
+    <div class="tbl-wrap"><table>
       <thead><tr>
         <th style="width:28px"><input type="checkbox" class="rc" id="check-all"></th>
         <th>Ref</th><th>Designation</th><th>Type</th><th>Cat</th>
         <th id="th-dispo">Disponible</th><th>Etat</th><th>Qte</th><th></th>
       </tr></thead>
       <tbody id="inv-body"></tbody>
-    </table>
+    </table></div>
   </div>
 </div>
 
@@ -230,10 +261,10 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
   </div>
   <div class="card">
     <div class="card-hd"><h2>Reservations en cours</h2></div>
-    <table>
+    <div class="tbl-wrap"><table>
       <thead><tr><th>Camp</th><th>Directeur</th><th>Materiel</th><th>Depart</th><th>Retour</th><th>Statut</th><th></th></tr></thead>
       <tbody id="res-tbody"><tr><td colspan="7" style="text-align:center;padding:20px;color:#7a9a80;font-size:13px">Aucune reservation.</td></tr></tbody>
-    </table>
+    </table></div>
   </div>
 </div>
 
@@ -314,7 +345,7 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRjICKJ-HNf4_9HAgcAt8g-GVvtGdzyAjLWlmaNwWCdEXHmLtAyhLGi8ugR01w8xr7uA/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMigAbHuR3JR-WR8_l0lSZdKCe-dUh0V0bb4NvDANguN67rgWbL1Xdv0faXiCNBITP/exec';
 
 var CAT_LABELS = {tentes:"Tentes",cuisine:"Cuisine",sport:"Sport",bureau:"Bureautique",camping:"Camping",loisirs:"Loisirs",linge:"Linge",mobilier:"Mobilier",divers:"Divers",hygiene:"Hygiene"};
 var CAT_REV = {Tentes:"tentes",Cuisine:"cuisine",Sport:"sport",Bureautique:"bureau",Camping:"camping",Loisirs:"loisirs",Linge:"linge",Mobilier:"mobilier",Divers:"divers","Hygiène":"hygiene",Hygiene:"hygiene"};
@@ -363,12 +394,19 @@ function dispoCell(item, hasDates, dispoVal) {
   return '<span style="color:#1a6b2f">'+d+"/"+total+"</span>";
 }
 
+var PAGE_LABELS={inventaire:"Inventaire",reservations:"Reservations",departs:"Departs",retours:"Retours",historique:"Historique"};
+var TAB_MAP={inventaire:"tab-inv",reservations:"tab-res",departs:"tab-dep",retours:"tab-ret",historique:"tab-his"};
 function showPage(pageId) {
   document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active");});
   document.querySelectorAll(".nav-tab").forEach(function(t){t.classList.remove("active");});
   var pg=document.getElementById(pageId); if(pg) pg.classList.add("active");
-  var tabMap={inventaire:"tab-inv",reservations:"tab-res",departs:"tab-dep",retours:"tab-ret",historique:"tab-his"};
-  var tab=document.getElementById(tabMap[pageId]); if(tab) tab.classList.add("active");
+  var tab=document.getElementById(TAB_MAP[pageId]); if(tab) tab.classList.add("active");
+  // sync dropdown
+  document.querySelectorAll("#nav-dropdown .nav-tab").forEach(function(t){
+    t.classList.toggle("active", t.dataset.dd===TAB_MAP[pageId]);
+  });
+  var lbl=document.getElementById("nav-active-lbl"); if(lbl) lbl.textContent=PAGE_LABELS[pageId]||"";
+  document.getElementById("nav-dropdown").classList.remove("open");
   if(pageId==="reservations") loadReservations();
   if(pageId==="departs") loadDeparts();
   if(pageId==="retours") loadRetours();
@@ -434,7 +472,8 @@ function renderTable() {
     // Etat — cliquable pour les notes
     var tdEtat = document.createElement("td");
     var etatWrap = document.createElement("span"); etatWrap.className = "etat-clk"; etatWrap.title = "Voir / ajouter des notes";
-    etatWrap.innerHTML = etatBadge(item.etat);
+    var effectiveEtat = item.notes ? "warn" : item.etat;
+    etatWrap.innerHTML = etatBadge(effectiveEtat);
     if (item.notes) { var dot = document.createElement("span"); dot.className = "note-dot"; etatWrap.appendChild(dot); }
     (function(ref){ etatWrap.addEventListener("click", function(){ openNotes(ref); }); })(item.ref);
     tdEtat.appendChild(etatWrap); tr.appendChild(tdEtat);
@@ -987,6 +1026,17 @@ document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("tab-dep").addEventListener("click", function(){ showPage("departs"); });
   document.getElementById("tab-ret").addEventListener("click", function(){ showPage("retours"); });
   document.getElementById("tab-his").addEventListener("click", function(){ showPage("historique"); });
+  // Burger menu
+  document.getElementById("nav-burger").addEventListener("click", function(){
+    document.getElementById("nav-dropdown").classList.toggle("open");
+  });
+  document.querySelectorAll("#nav-dropdown .nav-tab").forEach(function(t){
+    t.addEventListener("click", function(){ showPage({"tab-inv":"inventaire","tab-res":"reservations","tab-dep":"departs","tab-ret":"retours","tab-his":"historique"}[t.dataset.dd]); });
+  });
+  document.addEventListener("click", function(e){
+    if(!e.target.closest("#nav-burger") && !e.target.closest("#nav-dropdown"))
+      document.getElementById("nav-dropdown").classList.remove("open");
+  });
   document.getElementById("check-all").addEventListener("change", function(){ toggleAll(this); });
   document.getElementById("pan-clr").addEventListener("click", clearSelection);
   document.getElementById("pan-btn").addEventListener("click", goToReservation);
