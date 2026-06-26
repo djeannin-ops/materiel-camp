@@ -314,7 +314,7 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTTe5MRle-khK_oJPnzDhIG9fQMShPvlWK-KJUTc2K9aOb1B0AxY7hXXAgxjwCpmOKCQ/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxUECSqRaxnOMgtmBDXLV5ldot1b9SjRaWX97Rg18FrMmV6ZAGD0QQBm_I7aGydFWrQ_A/exec';
 
 var CAT_LABELS = {tentes:"Tentes",cuisine:"Cuisine",sport:"Sport",bureau:"Bureautique",camping:"Camping",loisirs:"Loisirs",linge:"Linge",mobilier:"Mobilier",divers:"Divers",hygiene:"Hygiene"};
 var CAT_REV = {Tentes:"tentes",Cuisine:"cuisine",Sport:"sport",Bureautique:"bureau",Camping:"camping",Loisirs:"loisirs",Linge:"linge",Mobilier:"mobilier",Divers:"divers","Hygiène":"hygiene",Hygiene:"hygiene"};
@@ -944,10 +944,12 @@ async function validerRetour(resId, materiel, card, btn) {
   }; });
   btn.textContent = "Envoi..."; btn.disabled = true;
   try {
-    await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"addRetour", reservationId:resId, camp:card.dataset.camp, directeur:card.dataset.dir, articles:articles})});
+    var res = await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"addRetour", reservationId:resId, camp:card.dataset.camp, directeur:card.dataset.dir, articles:articles})});
+    var result = await res.json();
+    if (result.warnings && result.warnings.length) console.warn("Retour warnings:", result.warnings);
     document.getElementById("succ-"+resId).classList.add("show");
     btn.style.display = "none";
-    setTimeout(function(){ loadRetours(); }, 2000);
+    setTimeout(function(){ loadRetours(); loadInventaire(); }, 2000);
   } catch(e) { btn.textContent = "Valider le retour"; btn.disabled = false; }
 }
 
