@@ -284,6 +284,8 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
 </div>
 <script>
 
+
+
 var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBkSEEk2MrymskEb-zMkl6VinpwYJrkO0D81Nn04A30hThBVjqMaHI4FVRTeclkaDg9A/exec';
 var CAT_LABELS = {tentes:"Tentes",cuisine:"Cuisine",sport:"Sport",bureau:"Bureautique",camping:"Camping",loisirs:"Loisirs",linge:"Linge",mobilier:"Mobilier",divers:"Divers",hygiene:"Hygiene"};
 var CAT_REV = {Tentes:"tentes",Cuisine:"cuisine",Sport:"sport",Bureautique:"bureau",Camping:"camping",Loisirs:"loisirs",Linge:"linge",Mobilier:"mobilier",Divers:"divers",Hygiene:"hygiene"};
@@ -594,8 +596,8 @@ async function loadReservations(){
       var mat="-";
       try{mat=JSON.parse(r["Mat\u00e9riel"]||r["Materiel"]||"[]").map(function(m){return m.ref;}).join(", ");}catch(e){}
       var st=r["Statut"]||"-";
-      var bc=(st==="Valid\u00e9"||st==="Valide")?"ok":((st==="Refus\u00e9"||st==="Refuse")?"alrt":"warn");
-      var canEdit=(st==="En attente"||st==="Valid\u00e9"||st==="Valide");
+      var stClean=st.toLowerCase().replace(/[^a-z]/g,""); var bc=stClean==="valide"?"ok":(stClean==="refuse"?"alrt":"warn");
+      var canEdit=(st==="En attente"||stClean==="valide");
       var tr=document.createElement("tr");
       tr.innerHTML="<td><strong>"+(r["Camp"]||"")+"</strong></td>"
         +"<td>"+(r["Directeur"]||"")+"</td>"
@@ -659,7 +661,7 @@ async function loadDeparts(){
     var data=await res.json();
     var today=new Date(); today.setHours(0,0,0,0);
     var liste=(data.reservations||[]).filter(function(r){
-      var st=r["Statut"]||""; if(st!=="Valid\u00e9"&&st!=="Valide") return false;
+      var st=r["Statut"]||""; var stClean=st.toLowerCase().replace(/[^a-z]/g,""); if(stClean!=="valide") return false;
       var dep=parseDateFR(r["Dates d\u00e9part"]||r["Dates depart"]);
       return (today-dep)/86400000<=1;
     });
@@ -721,7 +723,7 @@ async function loadRetours(){
     var today=new Date(); today.setHours(0,0,0,0);
     var liste=(data.reservations||[]).filter(function(r){
       var st=r["Statut"]||"";
-      if(["Refus\u00e9","Refuse","Retourn\u00e9","Retourne","En attente"].indexOf(st)>=0) return false;
+      var stClean=st.toLowerCase().replace(/[^a-z]/g,""); if(["refuse","retourne","enattente"].indexOf(stClean)>=0) return false; if(!stClean||stClean==="valide") return false;
       var dep=parseDateFR(r["Dates d\u00e9part"]||r["Dates depart"]); return dep<=today;
     });
     if(!liste.length){container.innerHTML='<div style="padding:24px;color:#7a9a80;font-size:13px;text-align:center">Aucun retour en attente.</div>';return;}
@@ -825,6 +827,8 @@ document.addEventListener("DOMContentLoaded", function() {
   });
   loadInventaire();
 });
+
+
 
 </script>
 </body>
