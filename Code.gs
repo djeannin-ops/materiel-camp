@@ -210,7 +210,7 @@ function addReservation(data) {
 
   // Notification email
   try {
-    const destinataire = 'denis.jeannin@etictelecom.com';
+    const destinataire = 'djeannin@gmail.com';
     let materielListe = '';
     try {
       materielListe = JSON.parse(data.materiel || '[]').map(m => '  - ' + m.nom + (m.qty > 1 ? ' x' + m.qty : '')).join('\n');
