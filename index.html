@@ -334,6 +334,15 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
       <button class="mo-cls" id="mo-notes-cls">&#x2715;</button>
     </div>
     <div class="mo-body">
+      <div style="margin-bottom:14px;display:flex;align-items:center;gap:10px">
+        <label style="font-size:12px;font-weight:700;color:#557a5e;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap">Etat</label>
+        <select id="mo-notes-etat" style="border:1.5px solid #c3d8c7;border-radius:7px;padding:6px 10px;font-size:13px;font-family:inherit;color:#1a2e1e;background:#f8fdf9;outline:none">
+          <option value="ok">Bon etat</option>
+          <option value="warn">A verifier</option>
+          <option value="alert">Alerte</option>
+        </select>
+        <button class="btn btn-p btn-sm" id="mo-notes-etat-save">Enregistrer</button>
+      </div>
       <div id="mo-notes-list"></div>
       <div class="notes-add">
         <input type="text" id="mo-notes-input" placeholder="Ajouter une note...">
@@ -346,13 +355,13 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMigAbHuR3JR-WR8_l0lSZdKCe-dUh0V0bb4NvDANguN67rgWbL1Xdv0faXiCNBITP/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwa0wZZxgeEIoy5YHZCZfCPl6a_o0u93oCxzczSyaVKNYKgwFXYT3BBYOmDx7p6Qfhc/exec';
 
 var CAT_LABELS = {tentes:"Tentes",cuisine:"Cuisine",sport:"Sport",bureau:"Bureautique",camping:"Camping",loisirs:"Loisirs",linge:"Linge",mobilier:"Mobilier",divers:"Divers",hygiene:"Hygiene"};
 var CAT_REV = {Tentes:"tentes",Cuisine:"cuisine",Sport:"sport",Bureautique:"bureau",Camping:"camping",Loisirs:"loisirs",Linge:"linge",Mobilier:"mobilier",Divers:"divers","Hygiène":"hygiene",Hygiene:"hygiene"};
 var CAT_EMOJI = {tentes:"⛺",cuisine:"🍳",sport:"⚽",bureau:"✏️",camping:"🏕️",loisirs:"🎨",linge:"🧴",mobilier:"🪑",divers:"📦",hygiene:"🧴"};
 
-var itemsData = [], dispoParDates = {}, datesActives = false;
+var itemsData = [], reservationsCache = [], dispoParDates = {}, datesActives = false;
 var selection = {}, catFilter = "", searchFilter = "";
 var currentModifId = null, currentModifMat = null;
 var currentNotesRef = null;
@@ -379,6 +388,13 @@ function formatDateInput(s) {
 }
 function showSuccess(id) { var el=document.getElementById(id); if(!el) return; el.classList.add("show"); setTimeout(function(){el.classList.remove("show");},4000); }
 
+function fmtDate(s) {
+  if (!s) return "-";
+  var d = new Date(s);
+  if (isNaN(d)) return String(s);
+  return ("0"+d.getDate()).slice(-2)+"/"+("0"+(d.getMonth()+1)).slice(-2)+"/"+d.getFullYear();
+}
+
 function etatBadge(e) {
   if(e==="ok") return '<span class="bdg ok">Bon etat</span>';
   if(e==="warn") return '<span class="bdg warn">A verifier</span>';
@@ -387,12 +403,47 @@ function etatBadge(e) {
 }
 
 function dispoCell(item, hasDates, dispoVal) {
-  var total = item.type==="caisse" ? 1 : (item.total||item.dispo||0);
-  if (!hasDates) { if(item.type==="caisse") return "1 unite"; if(item.dispo==null) return "?"; return item.dispo+"/"+total; }
-  var d = dispoVal;
-  if(d===0) return '<span style="color:#c07060;font-weight:700">0/'+total+' Indispo</span>';
-  if(d<total) return '<span style="color:#8a5500;font-weight:700">'+d+"/"+total+' dispo</span>';
-  return '<span style="color:#1a6b2f">'+d+"/"+total+"</span>";
+  if (item.type==="caisse") return dispoVal===0 ? '<span style="color:#c07060;font-weight:700">0</span>' : "1";
+  if (dispoVal===0) return '<span style="color:#c07060;font-weight:700">0</span>';
+  var total = item.total || 0;
+  if (dispoVal<total) return '<span style="color:#8a5500;font-weight:700">'+dispoVal+'</span>';
+  return '<span style="color:#1a6b2f;font-weight:600">'+dispoVal+'</span>';
+}
+
+// Calcule dispoParDates depuis Total et reservationsCache (pas de colonne Disponible)
+// dep/ret = strings ISO ou null (sans dates = stock physique actuel)
+function computeDispo(dep, ret) {
+  dispoParDates = {};
+  itemsData.forEach(function(item) {
+    dispoParDates[item.ref] = item.type==="caisse" ? 1 : (item.total || 0);
+  });
+  var d1 = dep ? new Date(dep) : null;
+  var d2 = ret ? new Date(ret) : null;
+  reservationsCache.forEach(function(r) {
+    var st = normSt(r["Statut"]);
+    if (st === "refuse" || st === "retourne") return;
+    var matDep = null;
+    try { var k = r["Matériel au départ"] || r["Materiel au depart"] || ""; if (k) matDep = JSON.parse(k); } catch(e) {}
+    var mat = null;
+    try { mat = JSON.parse(r["Matériel"] || r["Materiel"] || "[]"); } catch(e) {}
+    var items;
+    if (d1 && d2) {
+      // Avec dates : toutes les réservations qui se chevauchent
+      var rd1 = parseDateFR(r["Dates départ"] || r["Dates depart"]);
+      var rd2 = parseDateFR(r["Date retour"]);
+      if (!(d1 <= rd2 && d2 >= rd1)) return;
+      items = (st === "parti" && matDep && matDep.length) ? matDep : mat;
+    } else {
+      // Sans dates : uniquement ce qui est physiquement parti
+      if (st !== "parti") return;
+      items = (matDep && matDep.length) ? matDep : mat;
+    }
+    if (!items) return;
+    items.forEach(function(m) {
+      if (dispoParDates[m.ref] !== undefined)
+        dispoParDates[m.ref] = Math.max(0, dispoParDates[m.ref] - (parseInt(m.qty) || 1));
+    });
+  });
 }
 
 var PAGE_LABELS={inventaire:"Inventaire",reservations:"Reservations",departs:"Departs",retours:"Retours",historique:"Historique"};
@@ -420,10 +471,14 @@ async function loadInventaire() {
   var tbody = document.getElementById("inv-body");
   tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:#7a9a80">Chargement...</td></tr>';
   try {
-    var res = await fetch(SCRIPT_URL+"?action=getInventaire");
-    var data = await res.json();
-    if (!data.items || !data.items.length) throw new Error("Vide");
-    itemsData = data.items.map(function(row) {
+    var [resInv, resRes] = await Promise.all([
+      fetch(SCRIPT_URL+"?action=getInventaire"),
+      fetch(SCRIPT_URL+"?action=getReservations")
+    ]);
+    var dataInv = await resInv.json();
+    var dataRes = await resRes.json();
+    if (!dataInv.items || !dataInv.items.length) throw new Error("Vide");
+    itemsData = dataInv.items.map(function(row) {
       var ref = row["Référence"] || row["Reference"] || "";
       var catRaw = row["Catégorie"] || row["Categorie"] || "";
       var contenuRaw = row["Contenu"] ? String(row["Contenu"]) : "";
@@ -434,19 +489,22 @@ async function loadInventaire() {
         cat: CAT_REV[catRaw] || "divers",
         emoji: CAT_EMOJI[CAT_REV[catRaw] || "divers"] || "",
         total: parseInt(row["Total"]) || 0,
-        dispo: row["Disponible"] !== "" && row["Disponible"] !== null ? parseInt(row["Disponible"]) : null,
         etat: row["État"] || row["Etat"] || "ok",
         notes: row["Notes"] ? String(row["Notes"]) : "",
         contenu: contenuRaw ? contenuRaw.split(" | ") : null
       };
     });
+    reservationsCache = dataRes.reservations || [];
   } catch(e) {
     tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:#c07060;font-size:13px">Impossible de charger l\'inventaire. Verifiez la connexion.</td></tr>';
     return;
   }
   var dep = document.getElementById("cb-depart").value;
   var ret = document.getElementById("cb-retour").value;
-  if(dep && ret) { onDatesChange(); } else { renderTable(); }
+  computeDispo(dep || null, ret || null);
+  datesActives = !!(dep && ret);
+  document.getElementById("th-dispo").textContent = datesActives ? "Dispo sur ces dates" : "Disponible";
+  renderTable();
 }
 
 function renderTable() {
@@ -454,8 +512,8 @@ function renderTable() {
   tbody.innerHTML = "";
   data.forEach(function(item) {
     var isSel = !!selection[item.ref];
-    var dispoVal = hasDates ? (dispoParDates[item.ref] !== undefined ? dispoParDates[item.ref] : (item.dispo||0)) : (item.dispo||0);
-    var disabled = (item.dispo === 0 || item.dispo === null);
+    var dispoVal = dispoParDates[item.ref] !== undefined ? dispoParDates[item.ref] : (item.total || 0);
+    var disabled = dispoVal === 0;
     var maxQ = item.type === "caisse" ? 1 : dispoVal;
     var curQ = selection[item.ref] || 1;
     var tr = document.createElement("tr"); tr.className = "ir" + (isSel ? " sel" : "");
@@ -513,8 +571,8 @@ function renderTable() {
 
 function renderStats() {
   var t = itemsData.length;
-  var d = itemsData.filter(function(i){ return i.etat==="ok" && i.dispo !== 0; }).length;
-  var w = itemsData.filter(function(i){ return i.etat==="warn"; }).length;
+  var d = itemsData.filter(function(i){ return (dispoParDates[i.ref] || 0) > 0; }).length;
+  var w = itemsData.filter(function(i){ return i.notes || i.etat==="warn"; }).length;
   var a = itemsData.filter(function(i){ return i.etat==="alert"; }).length;
   document.getElementById("stats-bar").innerHTML =
     '<div class="stat"><div class="num">'+t+'</div><div class="lbl">References</div></div>'+
@@ -526,49 +584,23 @@ function renderStats() {
 function onDatesChange() {
   var dep = document.getElementById("cb-depart").value;
   var ret = document.getElementById("cb-retour").value;
-  if (!dep || !ret) {
-    datesActives = false; dispoParDates = {};
-    document.getElementById("cb-status").textContent = "Saisissez les dates pour voir les disponibilites";
-    document.getElementById("cb-status").className = "cb-status";
-    document.getElementById("th-dispo").textContent = "Disponible";
-    renderTable(); return;
+  var status = document.getElementById("cb-status");
+  datesActives = !!(dep && ret);
+  document.getElementById("th-dispo").textContent = datesActives ? "Dispo sur ces dates" : "Disponible";
+  computeDispo(dep || null, ret || null);
+  if (!datesActives) {
+    status.textContent = "Saisissez les dates pour voir les disponibilites";
+    status.className = "cb-status";
+  } else {
+    var ind = itemsData.filter(function(i){ return dispoParDates[i.ref] === 0 && i.total > 0; }).length;
+    var par = itemsData.filter(function(i){ return dispoParDates[i.ref] > 0 && dispoParDates[i.ref] < i.total; }).length;
+    if (ind > 0) { status.textContent = ind+" article(s) indisponible(s)"; status.className = "cb-status warn"; }
+    else if (par > 0) { status.textContent = par+" article(s) partiellement reserves"; status.className = "cb-status warn"; }
+    else { status.textContent = "Tout disponible sur ces dates"; status.className = "cb-status ok"; }
   }
-  document.getElementById("th-dispo").textContent = "Dispo sur ces dates";
-  checkDispoParDates(dep, ret);
+  renderTable();
 }
 
-async function checkDispoParDates(dep, ret) {
-  var status = document.getElementById("cb-status");
-  status.textContent = "Verification..."; status.className = "cb-status";
-  dispoParDates = {};
-  itemsData.forEach(function(item){ dispoParDates[item.ref] = item.type==="caisse" ? 1 : (item.total || item.dispo || 0); });
-  try {
-    var res = await fetch(SCRIPT_URL+"?action=getReservations");
-    var data = await res.json();
-    if (data.reservations && data.reservations.length) {
-      var d1 = new Date(dep), d2 = new Date(ret);
-      data.reservations.forEach(function(r) {
-        var st = normSt(r["Statut"]);
-        if (st === "refuse" || st === "retourne") return;
-        var rd1 = parseDateFR(r["Dates départ"] || r["Dates depart"]);
-        var rd2 = parseDateFR(r["Date retour"]);
-        if (d1 <= rd2 && d2 >= rd1) {
-          try {
-            JSON.parse(r["Matériel"] || r["Materiel"] || "[]").forEach(function(m) {
-              if (dispoParDates[m.ref] !== undefined) dispoParDates[m.ref] = Math.max(0, dispoParDates[m.ref] - (parseInt(m.qty) || 1));
-            });
-          } catch(e) {}
-        }
-      });
-    }
-  } catch(e) {}
-  var ind = itemsData.filter(function(i){ return dispoParDates[i.ref] === 0 && (i.total || i.dispo) > 0; }).length;
-  var par = itemsData.filter(function(i){ return dispoParDates[i.ref] > 0 && dispoParDates[i.ref] < (i.total || i.dispo || 0); }).length;
-  if (ind > 0) { status.textContent = ind+" article(s) indisponible(s)"; status.className = "cb-status warn"; }
-  else if (par > 0) { status.textContent = par+" article(s) partiellement reserves"; status.className = "cb-status warn"; }
-  else { status.textContent = "Tout disponible sur ces dates"; status.className = "cb-status ok"; }
-  datesActives = true; renderTable();
-}
 
 function toggleItem(ref, cb) {
   var item = itemsData.find(function(i){ return i.ref === ref; });
@@ -578,7 +610,7 @@ function toggleItem(ref, cb) {
 }
 function adjustQty(ref, delta) {
   var item = itemsData.find(function(i){ return i.ref === ref; });
-  var maxQ = item.type==="caisse" ? 1 : (datesActives ? (dispoParDates[ref] || 0) : (item.dispo || 0));
+  var maxQ = item.type==="caisse" ? 1 : (dispoParDates[ref] || 0);
   var inp = document.getElementById("qty-"+ref);
   var v = Math.max(1, Math.min(maxQ, parseInt(inp.value)+delta)); inp.value = v;
   if (selection[ref] !== undefined) { selection[ref] = v; updatePanier(); }
@@ -587,7 +619,7 @@ function adjustQty(ref, delta) {
 }
 function setQty(ref, val) {
   var item = itemsData.find(function(i){ return i.ref === ref; });
-  var maxQ = datesActives ? (dispoParDates[ref] || 0) : (item.dispo || 0);
+  var maxQ = dispoParDates[ref] || 0;
   val = Math.max(1, Math.min(maxQ, parseInt(val) || 1));
   document.getElementById("qty-"+ref).value = val;
   if (selection[ref] !== undefined) { selection[ref] = val; updatePanier(); }
@@ -598,7 +630,7 @@ function toggleAll(cb) {
     rc.checked = cb.checked;
     var ref = rc.dataset.ref;
     var item = itemsData.find(function(i){ return i.ref === ref; });
-    if (cb.checked) selection[ref] = item.type==="caisse" ? 1 : (datesActives ? (dispoParDates[ref] || 1) : (item.dispo || 1));
+    if (cb.checked) selection[ref] = item.type==="caisse" ? 1 : (dispoParDates[ref] || 1);
     else delete selection[ref];
     tr.classList.toggle("sel", cb.checked);
   }); updatePanier();
@@ -644,6 +676,7 @@ function openNotes(ref) {
   currentNotesRef = ref;
   document.getElementById("mo-notes-title").textContent = item.nom;
   document.getElementById("mo-notes-sub").textContent = item.ref;
+  document.getElementById("mo-notes-etat").value = item.etat || "ok";
   renderNotesList(item.notes || "");
   document.getElementById("mo-notes-input").value = "";
   document.getElementById("mo-notes").classList.add("open");
@@ -680,6 +713,18 @@ async function submitNote() {
     document.getElementById("mo-notes-input").value = "";
   } catch(e) { alert("Erreur lors de l'ajout de la note."); }
   btn.textContent = "Ajouter"; btn.disabled = false;
+}
+
+async function saveEtat() {
+  if (!currentNotesRef) return;
+  var etat = document.getElementById("mo-notes-etat").value;
+  var btn = document.getElementById("mo-notes-etat-save"); btn.textContent = "..."; btn.disabled = true;
+  try {
+    await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"updateEtat", ref:currentNotesRef, etat:etat})});
+    var item = itemsData.find(function(i){ return i.ref === currentNotesRef; });
+    if (item) { item.etat = etat; renderTable(); }
+  } catch(e) { alert("Erreur lors de la sauvegarde."); }
+  btn.textContent = "Enregistrer"; btn.disabled = false;
 }
 
 // ── RESERVATIONS ──────────────────────────────────────────────
@@ -768,8 +813,8 @@ async function loadReservations() {
       tr.innerHTML = "<td><strong>"+(r["Camp"]||"")+"</strong></td>"
         +"<td>"+(r["Directeur"]||"")+"</td>"
         +'<td style="font-size:12px">'+mat+"</td>"
-        +"<td>"+(r["Dates départ"]||r["Dates depart"]||"-")+"</td>"
-        +"<td>"+(r["Date retour"]||"-")+"</td>"
+        +"<td>"+fmtDate(r["Dates départ"]||r["Dates depart"])+"</td>"
+        +"<td>"+fmtDate(r["Date retour"])+"</td>"
         +'<td><span class="bdg '+bc+'">'+st+"</span></td>"
         +"<td>"+(canEdit?'<button class="btn btn-o btn-sm" id="edit-btn">Modifier</button>':"")+"</td>";
       if (canEdit) {
@@ -838,7 +883,7 @@ async function loadDeparts() {
       var card = document.createElement("div"); card.className = "dc";
       card.innerHTML = "<div class=\"dc-hd\">"
         +"<div><div class=\"dc-ttl\">"+(r["Camp"]||"")+" - "+(r["Directeur"]||"")+"</div>"
-        +"<div class=\"dc-meta\">Depart le "+(r["Dates départ"]||r["Dates depart"]||"?")+" - Retour le "+(r["Date retour"]||"?")+"</div></div>"
+        +"<div class=\"dc-meta\">Depart le "+fmtDate(r["Dates départ"]||r["Dates depart"])+" - Retour le "+fmtDate(r["Date retour"])+"</div></div>"
         +"<span id=\"prog-lbl-"+resId(r)+"\" style=\"font-size:13px;color:#7a9a80\">0 / "+total+" verifie(s)</span></div>"
         +"<div class=\"dp\"><div class=\"dpb\" id=\"prog-bar-"+resId(r)+"\" style=\"width:0%\"></div></div>";
 
@@ -952,7 +997,7 @@ async function loadRetours() {
       var succId = "succ-"+resId(r);
       card.innerHTML = "<div class=\"rc-hd\">"
         +"<div><div class=\"rc-ttl\">"+(r["Camp"]||"")+" - "+(r["Directeur"]||"")+"</div>"
-        +"<div class=\"rc-meta\">Parti le "+(r["Dates départ"]||r["Dates depart"]||"")+" - Retour prevu "+(r["Date retour"]||"")+(enRetard?" <strong style='color:#D94F3D'>EN RETARD</strong>":"")+"</div></div>"
+        +"<div class=\"rc-meta\">Parti le "+fmtDate(r["Dates départ"]||r["Dates depart"])+" - Retour prevu "+fmtDate(r["Date retour"])+(enRetard?" <strong style='color:#D94F3D'>EN RETARD</strong>":"")+"</div></div>"
         +"<div style=\"display:flex;gap:8px;align-items:center\"><span class=\"rc-suc\" id=\""+succId+"\">Enregistre !</span>"
         +"<button class=\"btn btn-p btn-sm\" id=\"btn-ret-"+resId(r)+"\">Valider le retour</button></div></div>";
 
@@ -1057,6 +1102,7 @@ document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("mo-notes-close").addEventListener("click", function(){ document.getElementById("mo-notes").classList.remove("open"); });
   document.getElementById("mo-notes").addEventListener("click", function(e){ if(e.target===this) this.classList.remove("open"); });
   document.getElementById("mo-notes-add").addEventListener("click", submitNote);
+  document.getElementById("mo-notes-etat-save").addEventListener("click", saveEtat);
   document.getElementById("mo-notes-input").addEventListener("keydown", function(e){ if(e.key==="Enter") submitNote(); });
   // Barre camp
   document.getElementById("cb-depart").addEventListener("change", onDatesChange);
