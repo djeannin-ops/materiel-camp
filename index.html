@@ -61,6 +61,9 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
 .alrt{background:#fdd8d4;color:#8a1a10}
 .caisse{background:#f0eef8;color:#5a3a8a}
 .art{background:#e8f4fd;color:#1a5a8a}
+.etat-clk{cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.etat-clk:hover .bdg{opacity:.85}
+.note-dot{width:6px;height:6px;border-radius:50%;background:#E8A020;display:inline-block;flex-shrink:0}
 .qty-cell{display:flex;align-items:center}
 .qb{width:24px;height:24px;border:1.5px solid #c3d8c7;background:#fff;color:#1F4E2C;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
 .qb:first-child{border-radius:6px 0 0 6px}
@@ -144,6 +147,12 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
 .cl li{padding:7px 0;border-bottom:1px solid #f0f5f1;font-size:14px;display:flex;align-items:center;gap:8px}
 .cl li:last-child{border-bottom:none}
 .cd{width:6px;height:6px;border-radius:50%;background:#4CAF6F;flex-shrink:0}
+.notes-line{padding:7px 0;border-bottom:1px solid #f0f5f1;font-size:13px;display:flex;gap:10px;align-items:flex-start}
+.notes-line:last-child{border-bottom:none}
+.notes-date{font-size:11px;font-weight:700;color:#7a9a80;white-space:nowrap;padding-top:1px}
+.notes-add{display:flex;gap:8px;margin-top:12px}
+.notes-add input{flex:1;border:1.5px solid #c3d8c7;border-radius:7px;padding:7px 12px;font-size:13px;font-family:inherit;outline:none;background:#f8fdf9}
+.notes-add input:focus{border-color:#4CAF6F;background:#fff}
 </style>
 </head>
 <body>
@@ -229,7 +238,7 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
 </div>
 
 <div id="departs" class="page">
-  <div class="ph"><div><h1>Departs</h1><p>Cochez le materiel verifie pour chaque camp</p></div></div>
+  <div class="ph"><div><h1>Departs</h1><p>Verifiez le materiel et precisez les quantites qui partent</p></div></div>
   <div id="dep-container"><div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">Chargement...</div></div>
 </div>
 
@@ -255,17 +264,19 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
   </div>
 </div>
 
+<!-- Modale contenu caisse -->
 <div id="mo-contenu" class="mo">
   <div class="modal">
-    <div class="mo-hd"><div><h3 id="mo-title"></h3><div class="mo-sub" id="mo-sub"></div></div><button class="mo-cls" id="mo-cls">X</button></div>
+    <div class="mo-hd"><div><h3 id="mo-title"></h3><div class="mo-sub" id="mo-sub"></div></div><button class="mo-cls" id="mo-cls">&#x2715;</button></div>
     <div class="mo-body"><ul class="cl" id="mo-list"></ul></div>
     <div class="mo-ft"><button class="btn btn-p" id="mo-ok">Fermer</button></div>
   </div>
 </div>
 
+<!-- Modale modification reservation -->
 <div id="mo-modif" class="mo">
   <div class="modal" style="max-width:560px">
-    <div class="mo-hd"><div><h3>Modifier la reservation</h3><div class="mo-sub" id="mo-modif-id"></div></div><button class="mo-cls" id="mo-modif-cls">X</button></div>
+    <div class="mo-hd"><div><h3>Modifier la reservation</h3><div class="mo-sub" id="mo-modif-id"></div></div><button class="mo-cls" id="mo-modif-cls">&#x2715;</button></div>
     <div class="mo-body">
       <div class="fg" style="padding:0">
         <div class="g"><label>Camp</label><input type="text" id="modif-camp"></div>
@@ -282,17 +293,37 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
     </div>
   </div>
 </div>
+
+<!-- Modale notes inventaire -->
+<div id="mo-notes" class="mo">
+  <div class="modal" style="max-width:480px">
+    <div class="mo-hd">
+      <div><h3 id="mo-notes-title"></h3><div class="mo-sub" id="mo-notes-sub"></div></div>
+      <button class="mo-cls" id="mo-notes-cls">&#x2715;</button>
+    </div>
+    <div class="mo-body">
+      <div id="mo-notes-list"></div>
+      <div class="notes-add">
+        <input type="text" id="mo-notes-input" placeholder="Ajouter une note...">
+        <button class="btn btn-p btn-sm" id="mo-notes-add">Ajouter</button>
+      </div>
+    </div>
+    <div class="mo-ft"><button class="btn btn-o" id="mo-notes-close">Fermer</button></div>
+  </div>
+</div>
+
 <script>
 
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxploC1EWgA5vWbMFsPA3nQ_nYmjcWR08iLa57oZryT0zgA5BLugp32QTH48qOR20WTfg/exec';
 
-
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBkSEEk2MrymskEb-zMkl6VinpwYJrkO0D81Nn04A30hThBVjqMaHI4FVRTeclkaDg9A/exec';
 var CAT_LABELS = {tentes:"Tentes",cuisine:"Cuisine",sport:"Sport",bureau:"Bureautique",camping:"Camping",loisirs:"Loisirs",linge:"Linge",mobilier:"Mobilier",divers:"Divers",hygiene:"Hygiene"};
-var CAT_REV = {Tentes:"tentes",Cuisine:"cuisine",Sport:"sport",Bureautique:"bureau",Camping:"camping",Loisirs:"loisirs",Linge:"linge",Mobilier:"mobilier",Divers:"divers",Hygiene:"hygiene"};
-var ITEMS_LOCAL = [{"ref":"A1-01","nom":"Tables plastique","cat":"mobilier","type":"article","emoji":"🪑","dispo":14,"total":14,"etat":"ok","contenu":null},{"ref":"A1-02","nom":"Table métal (plancha)","cat":"mobilier","type":"article","emoji":"🪑","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"A1-03","nom":"Nappes","cat":"mobilier","type":"article","emoji":"🧺","dispo":null,"total":null,"etat":"warn","contenu":null},{"ref":"A2-01","nom":"Bancs bois","cat":"mobilier","type":"article","emoji":"🪑","dispo":18,"total":18,"etat":"ok","contenu":null},{"ref":"A2-02","nom":"Chaises camping pliantes","cat":"mobilier","type":"article","emoji":"🪑","dispo":12,"total":12,"etat":"ok","contenu":null},{"ref":"A3-01","nom":"Plancha (77×75cm)","cat":"cuisine","type":"article","emoji":"🍳","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"A3-02","nom":"Grille barbecue 40×70cm","cat":"cuisine","type":"article","emoji":"🔥","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G-01","nom":"Frigos","cat":"cuisine","type":"article","emoji":"🧊","dispo":3,"total":3,"etat":"ok","contenu":null},{"ref":"G-02","nom":"Évier cuisine","cat":"cuisine","type":"article","emoji":"🚿","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G-03","nom":"Tuyau arrosage (60m)","cat":"divers","type":"article","emoji":"🌊","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"B1","nom":"Caisse B1 — Couvertures","cat":"camping","type":"caisse","emoji":"🛏️","dispo":1,"total":1,"etat":"warn","contenu":["Couvertures (quantité à vérifier)"]},{"ref":"B2","nom":"Caisse B2 — Gaz","cat":"camping","type":"caisse","emoji":"🔥","dispo":1,"total":1,"etat":"ok","contenu":["Bouteilles gaz Camping Gaz × 6","Bouteilles mini réchauds type 206/200 × 4","Bouteilles gaz Cube × 3","Détendeur + Tuyau × 4"]},{"ref":"B3","nom":"Caisse B3 — Réchauds","cat":"cuisine","type":"caisse","emoji":"🍳","dispo":1,"total":1,"etat":"ok","contenu":["Réchauds mini-cartouches × 2","Grand réchauds CampingGaz × 2","Réchauds 2 plaques CampingGaz × 1","Plaque induction autonome × 2","Très grand bruleur gaz (paella) × 1","Grand bruleur gaz × 2"]},{"ref":"B4","nom":"Caisse B4 — Électricité","cat":"divers","type":"caisse","emoji":"🔌","dispo":1,"total":1,"etat":"ok","contenu":["Rallonges électrique 20m orange × 2","Rallonges électrique 10m blanche × 3","Rallonges électrique 40m orange × 2","Crochet pour projecteur × 3","Multiprise avec fil × 4","Multiprise sans fil × 4","Raccord borne camping × 3","Projecteur LED × 3"]},{"ref":"C1-01","nom":"Glaciaire 1","cat":"cuisine","type":"article","emoji":"🧊","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"C1-02","nom":"Glaciaire 2","cat":"cuisine","type":"article","emoji":"🧊","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"C12-01","nom":"Grande Glaciaire","cat":"cuisine","type":"article","emoji":"🧊","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"C2","nom":"Caisse C2 — Service pain & eau","cat":"cuisine","type":"caisse","emoji":"🍞","dispo":1,"total":1,"etat":"ok","contenu":["Panières à pain × 15","Pots à eau × 12"]},{"ref":"C3","nom":"Caisse C3 — Gourdes & Jerricans","cat":"camping","type":"caisse","emoji":"🫙","dispo":1,"total":1,"etat":"ok","contenu":["Gourdes × 6","Grand jerrican × 1","Petits jerricans × 3"]},{"ref":"C5","nom":"Caisse C5 — Café","cat":"cuisine","type":"caisse","emoji":"☕","dispo":1,"total":1,"etat":"ok","contenu":["Cafetière filtre × 1","Bouilloires × 2","Filtres à café"]},{"ref":"C6","nom":"Caisse C6 — Saladiers Camping","cat":"cuisine","type":"caisse","emoji":"🥗","dispo":1,"total":1,"etat":"ok","contenu":["Big saladiers × 2","Grands saladiers × 2","Moyens saladiers × 4","Petits saladiers × 4","Saladiers jetables × 6","Planches à découper × 6"]},{"ref":"C7","nom":"Caisse C7 — Lot 2 Cuisson","cat":"cuisine","type":"caisse","emoji":"🍲","dispo":1,"total":1,"etat":"ok","contenu":["Grande marmite × 1","Cuit vapeur × 1","Poêle + Couvercle × 1","Casserole + Couvercle + Poignée × 1"]},{"ref":"C8","nom":"Caisse C8 — Lot 1 Cuisson","cat":"cuisine","type":"caisse","emoji":"🍲","dispo":1,"total":1,"etat":"ok","contenu":["Grande marmite × 1","Cocotte Minute × 1","Casserole moyenne + couvercle × 1"]},{"ref":"C9","nom":"Caisse C9 — Poêles","cat":"cuisine","type":"caisse","emoji":"🍳","dispo":1,"total":1,"etat":"ok","contenu":["Poêles à crêpes × 2","Poêle inox × 1","Poêles tefal × 3","Couvercles × 2","Poignée × 1","Maniques × 4"]},{"ref":"C10","nom":"Caisse C10 — Passoires & Plats","cat":"cuisine","type":"caisse","emoji":"🥣","dispo":1,"total":1,"etat":"ok","contenu":["Essoreuses salade × 2","Passoires × 2","Plats de service × 4","Petite passoire × 1"]},{"ref":"C14","nom":"Caisse C14 — Vaisselle Itinérant","cat":"cuisine","type":"caisse","emoji":"🍽️","dispo":1,"total":1,"etat":"ok","contenu":["Assiettes × 41","Bols × 41","Verres × 41"]},{"ref":"C17","nom":"Caisse C17 — Vaisselle Tour Camping","cat":"cuisine","type":"caisse","emoji":"🍽️","dispo":1,"total":1,"etat":"ok","contenu":["Couverts × 50","Assiettes × 45","Bols × 45","Verres × 45"]},{"ref":"D5-01","nom":"Mégaphone","cat":"loisirs","type":"article","emoji":"📣","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"D7","nom":"Caisse D7 — Tir à l'arc","cat":"loisirs","type":"caisse","emoji":"🏹","dispo":1,"total":1,"etat":"ok","contenu":["Arc de tir × 1","Flèches × 3"]},{"ref":"D8","nom":"Caisse D8 — Sport 1","cat":"sport","type":"caisse","emoji":"⚽","dispo":1,"total":1,"etat":"ok","contenu":["Chasubles 1 couleur × 15","Ballon foot × 1","Ballon volley × 1","Brassards / bandeaux × 2 lots","Diverses petites balles","Jeu de Stratégo (non vérifié)"]},{"ref":"D9","nom":"Caisse D9 — Sport 1 bis","cat":"sport","type":"caisse","emoji":"⚽","dispo":1,"total":1,"etat":"ok","contenu":["Chasubles 1 couleur × 15","Ballon foot × 1","Ballon volley × 1","Brassards / bandeaux × 2 lots","Diverses petites balles","Jeu de Stratégo (non vérifié)"]},{"ref":"D10","nom":"Caisse D10 — Sport 2","cat":"sport","type":"caisse","emoji":"🏸","dispo":1,"total":1,"etat":"ok","contenu":["Cônes grands × 6","Raquettes PP × 6","Frisbee × 1","Volant × 1","Molky × 1","Diabolo × 1"]},{"ref":"D11","nom":"Caisse D11 — Sport 2 bis","cat":"sport","type":"caisse","emoji":"🏸","dispo":1,"total":1,"etat":"ok","contenu":["Cônes petits × 1 lot","Raquettes PP × 6","Frisbee × 1","Volant × 1","Molky × 1","Diabolo × 1"]},{"ref":"D12","nom":"Caisse D12 — Bureautique Petits","cat":"bureau","type":"caisse","emoji":"✏️","dispo":1,"total":1,"etat":"ok","contenu":["Boite stylos et crayons papier × 1","Boite feutres × 1","Boite marqueurs × 1","Boite marqueurs textiles × 1","Boite divers (scotch, colle, ciseaux, craies…) × 1","Règles × 1 petit lot","Feuilles couleurs, blanches, divers textures × 1 lot"]},{"ref":"D13","nom":"Caisse D13 — Peinture Petits","cat":"bureau","type":"caisse","emoji":"🎨","dispo":1,"total":1,"etat":"ok","contenu":["Peinture × 1 lot","Pinceaux × 1 bon lot"]},{"ref":"D15","nom":"Caisse D15 — Bureautique Ados","cat":"bureau","type":"caisse","emoji":"✏️","dispo":1,"total":1,"etat":"ok","contenu":["Boite stylos et crayons papier × 1","Boite feutres × 1","Boite marqueurs × 1","Boite marqueurs textiles × 1","Boite divers × 1","Règles × 1 petit lot","Petit lot peinture × 1","Cutter × 1","Feuilles couleurs, blanches, divers textures × 1 lot"]},{"ref":"D16","nom":"Caisse D16 — Bureautique Jeunes","cat":"bureau","type":"caisse","emoji":"✏️","dispo":1,"total":1,"etat":"ok","contenu":["Boite stylos et crayons papier × 1","Boite feutres × 1","Boite marqueurs × 1","Boite marqueurs textiles × 1","Boite divers × 1","Règles × 1 petit lot","Petit lot peinture × 1","Cutter × 1","Feuilles couleurs, blanches, divers textures × 1 lot"]},{"ref":"D14-01","nom":"Plastifieuse","cat":"bureau","type":"article","emoji":"🖨️","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"D18-01","nom":"Vidéo projecteur","cat":"loisirs","type":"article","emoji":"📽️","dispo":1,"total":1,"etat":"warn","contenu":null},{"ref":"E1-01","nom":"Duvet toile","cat":"camping","type":"article","emoji":"🛌","dispo":4,"total":4,"etat":"ok","contenu":null},{"ref":"E1-02","nom":"Duvet 10°","cat":"camping","type":"article","emoji":"🛌","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"E1-03","nom":"Duvet 20°","cat":"camping","type":"article","emoji":"🛌","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"E7","nom":"Caisse E7 — Linge Gîte","cat":"linge","type":"caisse","emoji":"🧺","dispo":1,"total":1,"etat":"ok","contenu":["Torchons vaisselle × 70"]},{"ref":"E8","nom":"Caisse E8 — Linge Camping","cat":"linge","type":"caisse","emoji":"🧺","dispo":1,"total":1,"etat":"ok","contenu":["Tabliers × 10","Toques × 10","Torchons mains × 43"]},{"ref":"E9","nom":"Caisse E9 — Torchons Camping","cat":"linge","type":"caisse","emoji":"🧺","dispo":1,"total":1,"etat":"ok","contenu":["Torchons vaisselle × 70"]},{"ref":"E10","nom":"Caisse E10 — Linge Gîte complet","cat":"linge","type":"caisse","emoji":"🧺","dispo":1,"total":1,"etat":"ok","contenu":["Tabliers × 10","Toques × 10","Torchons mains × 40","Tabliers ménage × 7","Tabliers plonge × 2"]},{"ref":"F1-01","nom":"Matelas mousse","cat":"camping","type":"article","emoji":"🛏️","dispo":4,"total":4,"etat":"ok","contenu":null},{"ref":"F1-02","nom":"Matelas gonflables","cat":"camping","type":"article","emoji":"🛏️","dispo":3,"total":3,"etat":"ok","contenu":null},{"ref":"F3-01","nom":"Tente 2s noire (3 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"F3-02","nom":"Tente 2s light (3 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G2-01","nom":"Tentes 2s (3 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":5,"total":5,"etat":"ok","contenu":null},{"ref":"G3-01","nom":"Tente Arpenaz Family 4 (4 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G4-01","nom":"Tente Arpenaz Family 4 (4 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G5-01","nom":"Tente Arpenaz Family 4.1 (4 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G6-01","nom":"Tente Arpenaz Family 4.1 (4 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G7-01","nom":"Tente matos","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G8-01","nom":"Tente T4.2 dome (6 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G9-01","nom":"Tente Arpenaz 4.2 F&B (6 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G10-01","nom":"Tente Arpenaz 4.2 (6 places)","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G11-01","nom":"Tente 8 places","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"G12-01","nom":"Tente 6 places","cat":"tentes","type":"article","emoji":"⛺","dispo":1,"total":1,"etat":"ok","contenu":null},{"ref":"D1","nom":"Caisse D1 — Déguisements Médiéval","cat":"loisirs","type":"caisse","emoji":"🏰","dispo":1,"total":1,"etat":"ok","contenu":["Costumes médiévaux (contenu à détailler)"]},{"ref":"D2","nom":"Caisse D2 — Déguisements Romains","cat":"loisirs","type":"caisse","emoji":"🏛️","dispo":1,"total":1,"etat":"ok","contenu":["Obélix & époque romaine (contenu à détailler)"]},{"ref":"D3","nom":"Caisse D3 — Accessoires Déguisements","cat":"loisirs","type":"caisse","emoji":"🎭","dispo":1,"total":1,"etat":"ok","contenu":["Chapeaux divers","Lunettes","Nœuds papillon","Accessoires cowboy (contenu à détailler)"]},{"ref":"D4","nom":"Caisse D4 — Déguisements Hippie & Tutus","cat":"loisirs","type":"caisse","emoji":"🎭","dispo":1,"total":1,"etat":"ok","contenu":["Hippie × 2","Grands tutus × 2","Diverses perruques (contenu à détailler)"]},{"ref":"E11","nom":"Caisse E11 — Hygiène Gîte","cat":"hygiene","type":"caisse","emoji":"🧴","dispo":1,"total":1,"etat":"ok","contenu":["Consommables hygiène pour le Gîte (contenu à détailler)"]},{"ref":"E12","nom":"Caisse E12 — Hygiène Gîte (2)","cat":"hygiene","type":"caisse","emoji":"🧴","dispo":1,"total":1,"etat":"ok","contenu":["Consommables hygiène pour le Gîte (contenu à détailler)"]},{"ref":"E13","nom":"Caisse E13 — Hygiène Camping","cat":"hygiene","type":"caisse","emoji":"🧴","dispo":1,"total":1,"etat":"ok","contenu":["Consommables hygiène pour le Camping (contenu à détailler)"]},{"ref":"GX-01","nom":"Barnum","cat":"camping","type":"article","emoji":"🎪","dispo":1,"total":1,"etat":"ok","contenu":null}];
+var CAT_REV = {Tentes:"tentes",Cuisine:"cuisine",Sport:"sport",Bureautique:"bureau",Camping:"camping",Loisirs:"loisirs",Linge:"linge",Mobilier:"mobilier",Divers:"divers","Hygiène":"hygiene",Hygiene:"hygiene"};
+var CAT_EMOJI = {tentes:"⛺",cuisine:"🍳",sport:"⚽",bureau:"✏️",camping:"🏕️",loisirs:"🎨",linge:"🧴",mobilier:"🪑",divers:"📦",hygiene:"🧴"};
+
 var itemsData = [], dispoParDates = {}, datesActives = false;
 var selection = {}, catFilter = "", searchFilter = "";
 var currentModifId = null, currentModifMat = null;
+var currentNotesRef = null;
 
 function parseDateFR(s) {
   if (!s) return new Date("invalid");
@@ -309,12 +340,14 @@ function formatDateInput(s) {
   return s;
 }
 function showSuccess(id) { var el=document.getElementById(id); if(!el) return; el.classList.add("show"); setTimeout(function(){el.classList.remove("show");},4000); }
+
 function etatBadge(e) {
   if(e==="ok") return '<span class="bdg ok">Bon etat</span>';
   if(e==="warn") return '<span class="bdg warn">A verifier</span>';
   if(e==="alert") return '<span class="bdg alrt">Alerte</span>';
-  return "";
+  return '<span class="bdg warn">A verifier</span>';
 }
+
 function dispoCell(item, hasDates, dispoVal) {
   var total = item.type==="caisse" ? 1 : (item.total||item.dispo||0);
   if (!hasDates) { if(item.type==="caisse") return "1 unite"; if(item.dispo==null) return "?"; return item.dispo+"/"+total; }
@@ -336,89 +369,108 @@ function showPage(pageId) {
   if(pageId==="historique") loadHistorique();
 }
 
+// ── INVENTAIRE ──────────────────────────────────────────────
+
 async function loadInventaire() {
-  var tbody=document.getElementById("inv-body");
-  tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:24px;color:#7a9a80">Chargement...</td></tr>';
+  var tbody = document.getElementById("inv-body");
+  tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:#7a9a80">Chargement...</td></tr>';
   try {
-    var res=await fetch(SCRIPT_URL+"?action=getInventaire");
-    var data=await res.json();
-    if(data.items && data.items.length>0) {
-      itemsData=data.items.map(function(row) {
-        var keys=Object.keys(row);
-        var ref=row["Reference"]||row["R\u00e9f\u00e9rence"]||row[keys[0]]||"";
-        var loc=ITEMS_LOCAL.find(function(i){return i.ref===ref;});
-        var catRaw=row["Categorie"]||row["Cat\u00e9gorie"]||"";
-        return {
-          ref:ref, nom:row["Nom"]||"",
-          type:(row["Type"]==="caisse")?"caisse":"article",
-          cat:loc?loc.cat:(CAT_REV[catRaw]||"divers"),
-          emoji:loc?loc.emoji:"",
-          total:parseInt(row["Total"])||0,
-          dispo:parseInt(row["Disponible"])||0,
-          etat:row["Etat"]||row["\u00c9tat"]||"ok",
-          contenu:loc?loc.contenu:((row["Contenu"]&&row["Contenu"]!=="")?row["Contenu"].split(" | "):null)
-        };
-      });
-    } else { itemsData=ITEMS_LOCAL; }
-  } catch(e) { itemsData=ITEMS_LOCAL; }
-  var dep=document.getElementById("cb-depart").value;
-  var ret=document.getElementById("cb-retour").value;
-  if(dep&&ret){onDatesChange();}else{renderTable();}
+    var res = await fetch(SCRIPT_URL+"?action=getInventaire");
+    var data = await res.json();
+    if (!data.items || !data.items.length) throw new Error("Vide");
+    itemsData = data.items.map(function(row) {
+      var ref = row["Référence"] || row["Reference"] || "";
+      var catRaw = row["Catégorie"] || row["Categorie"] || "";
+      var contenuRaw = row["Contenu"] ? String(row["Contenu"]) : "";
+      return {
+        ref: ref,
+        nom: row["Nom"] || "",
+        type: (row["Type"] === "caisse") ? "caisse" : "article",
+        cat: CAT_REV[catRaw] || "divers",
+        emoji: CAT_EMOJI[CAT_REV[catRaw] || "divers"] || "",
+        total: parseInt(row["Total"]) || 0,
+        dispo: row["Disponible"] !== "" && row["Disponible"] !== null ? parseInt(row["Disponible"]) : null,
+        etat: row["État"] || row["Etat"] || "ok",
+        notes: row["Notes"] ? String(row["Notes"]) : "",
+        contenu: contenuRaw ? contenuRaw.split(" | ") : null
+      };
+    });
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:#c07060;font-size:13px">Impossible de charger l\'inventaire. Verifiez la connexion.</td></tr>';
+    return;
+  }
+  var dep = document.getElementById("cb-depart").value;
+  var ret = document.getElementById("cb-retour").value;
+  if(dep && ret) { onDatesChange(); } else { renderTable(); }
 }
 
 function renderTable() {
-  var data=filteredItems(), tbody=document.getElementById("inv-body"), hasDates=datesActives;
-  tbody.innerHTML="";
+  var data = filteredItems(), tbody = document.getElementById("inv-body"), hasDates = datesActives;
+  tbody.innerHTML = "";
   data.forEach(function(item) {
-    var isSel=!!selection[item.ref];
-    var dispoVal=hasDates?(dispoParDates[item.ref]!==undefined?dispoParDates[item.ref]:(item.dispo||0)):(item.dispo||0);
-    var disabled=(item.dispo===0||item.dispo===null);
-    var maxQ=item.type==="caisse"?1:dispoVal;
-    var curQ=selection[item.ref]||1;
-    var tr=document.createElement("tr"); tr.className="ir"+(isSel?" sel":"");
-    var tdCb=document.createElement("td");
-    var cb=document.createElement("input"); cb.type="checkbox"; cb.className="rc"; cb.checked=isSel; cb.disabled=disabled; cb.dataset.ref=item.ref;
+    var isSel = !!selection[item.ref];
+    var dispoVal = hasDates ? (dispoParDates[item.ref] !== undefined ? dispoParDates[item.ref] : (item.dispo||0)) : (item.dispo||0);
+    var disabled = (item.dispo === 0 || item.dispo === null);
+    var maxQ = item.type === "caisse" ? 1 : dispoVal;
+    var curQ = selection[item.ref] || 1;
+    var tr = document.createElement("tr"); tr.className = "ir" + (isSel ? " sel" : "");
+
+    var tdCb = document.createElement("td");
+    var cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "rc"; cb.checked = isSel; cb.disabled = disabled; cb.dataset.ref = item.ref;
     tdCb.appendChild(cb); tr.appendChild(tdCb);
-    var tdRef=document.createElement("td"); tdRef.innerHTML='<span class="ref">'+item.ref+"</span>"; tr.appendChild(tdRef);
-    var tdNom=document.createElement("td"); tdNom.innerHTML="<strong>"+(item.emoji?item.emoji+" ":"")+item.nom+"</strong>"; tr.appendChild(tdNom);
-    var tdType=document.createElement("td"); tdType.innerHTML=item.type==="caisse"?'<span class="bdg caisse">Caisse</span>':'<span class="bdg art">Article</span>'; tr.appendChild(tdType);
-    var tdCat=document.createElement("td"); tdCat.style.fontSize="12px"; tdCat.style.color="#557a5e"; tdCat.textContent=CAT_LABELS[item.cat]||item.cat; tr.appendChild(tdCat);
-    var tdDispo=document.createElement("td"); tdDispo.innerHTML=dispoCell(item,hasDates,dispoVal); tr.appendChild(tdDispo);
-    var tdEtat=document.createElement("td"); tdEtat.innerHTML=etatBadge(item.etat); tr.appendChild(tdEtat);
-    var tdQty=document.createElement("td");
-    if(!disabled&&maxQ>0){
-      var wrap=document.createElement("div"); wrap.className="qty-cell";
-      var bm=document.createElement("button"); bm.className="qb"; bm.textContent="-"; bm.disabled=curQ<=1;
-      var inp=document.createElement("input"); inp.type="number"; inp.className="qv"; inp.id="qty-"+item.ref; inp.value=curQ; inp.min=1; inp.max=maxQ;
-      var bp=document.createElement("button"); bp.className="qb"; bp.textContent="+"; bp.disabled=curQ>=maxQ;
-      var mx=document.createElement("span"); mx.className="qmax"; mx.textContent="/ "+maxQ;
+
+    var tdRef = document.createElement("td"); tdRef.innerHTML = '<span class="ref">'+item.ref+"</span>"; tr.appendChild(tdRef);
+    var tdNom = document.createElement("td"); tdNom.innerHTML = "<strong>"+(item.emoji ? item.emoji+" " : "")+item.nom+"</strong>"; tr.appendChild(tdNom);
+    var tdType = document.createElement("td"); tdType.innerHTML = item.type==="caisse" ? '<span class="bdg caisse">Caisse</span>' : '<span class="bdg art">Article</span>'; tr.appendChild(tdType);
+    var tdCat = document.createElement("td"); tdCat.style.fontSize = "12px"; tdCat.style.color = "#557a5e"; tdCat.textContent = CAT_LABELS[item.cat] || item.cat; tr.appendChild(tdCat);
+    var tdDispo = document.createElement("td"); tdDispo.innerHTML = dispoCell(item, hasDates, dispoVal); tr.appendChild(tdDispo);
+
+    // Etat — cliquable pour les notes
+    var tdEtat = document.createElement("td");
+    var etatWrap = document.createElement("span"); etatWrap.className = "etat-clk"; etatWrap.title = "Voir / ajouter des notes";
+    etatWrap.innerHTML = etatBadge(item.etat);
+    if (item.notes) { var dot = document.createElement("span"); dot.className = "note-dot"; etatWrap.appendChild(dot); }
+    (function(ref){ etatWrap.addEventListener("click", function(){ openNotes(ref); }); })(item.ref);
+    tdEtat.appendChild(etatWrap); tr.appendChild(tdEtat);
+
+    var tdQty = document.createElement("td");
+    if (!disabled && maxQ > 0) {
+      var wrap = document.createElement("div"); wrap.className = "qty-cell";
+      var bm = document.createElement("button"); bm.className = "qb"; bm.textContent = "-"; bm.disabled = curQ <= 1;
+      var inp = document.createElement("input"); inp.type = "number"; inp.className = "qv"; inp.id = "qty-"+item.ref; inp.value = curQ; inp.min = 1; inp.max = maxQ;
+      var bp = document.createElement("button"); bp.className = "qb"; bp.textContent = "+"; bp.disabled = curQ >= maxQ;
+      var mx = document.createElement("span"); mx.className = "qmax"; mx.textContent = "/ "+maxQ;
       (function(ref){
-        bm.addEventListener("click",function(){adjustQty(ref,-1);});
-        bp.addEventListener("click",function(){adjustQty(ref,1);});
-        inp.addEventListener("change",function(){setQty(ref,this.value);});
-        cb.addEventListener("change",function(){toggleItem(ref,this);});
+        bm.addEventListener("click", function(){ adjustQty(ref, -1); });
+        bp.addEventListener("click", function(){ adjustQty(ref, 1); });
+        inp.addEventListener("change", function(){ setQty(ref, this.value); });
+        cb.addEventListener("change", function(){ toggleItem(ref, this); });
       })(item.ref);
       wrap.appendChild(bm); wrap.appendChild(inp); wrap.appendChild(bp); wrap.appendChild(mx); tdQty.appendChild(wrap);
-    } else { tdQty.innerHTML='<span style="font-size:11px;color:#b0a090">-</span>'; }
+    } else {
+      tdQty.innerHTML = '<span style="font-size:11px;color:#b0a090">-</span>';
+    }
     tr.appendChild(tdQty);
-    var tdC=document.createElement("td");
-    if(item.type==="caisse"){
-      var btn=document.createElement("button"); btn.className="cb-btn"; btn.textContent="Contenu";
-      (function(ref){btn.addEventListener("click",function(){openContenu(ref);});})(item.ref);
+
+    var tdC = document.createElement("td");
+    if (item.type === "caisse") {
+      var btn = document.createElement("button"); btn.className = "cb-btn"; btn.textContent = "Contenu";
+      (function(ref){ btn.addEventListener("click", function(){ openContenu(ref); }); })(item.ref);
       tdC.appendChild(btn);
-    } else { tdC.textContent="-"; }
+    } else { tdC.textContent = "-"; }
     tr.appendChild(tdC);
+
     tbody.appendChild(tr);
   });
   renderStats();
 }
 
 function renderStats() {
-  var t=itemsData.length;
-  var d=itemsData.filter(function(i){return i.etat==="ok"&&i.dispo!==0;}).length;
-  var w=itemsData.filter(function(i){return i.etat==="warn";}).length;
-  var a=itemsData.filter(function(i){return i.etat==="alert";}).length;
-  document.getElementById("stats-bar").innerHTML=
+  var t = itemsData.length;
+  var d = itemsData.filter(function(i){ return i.etat==="ok" && i.dispo !== 0; }).length;
+  var w = itemsData.filter(function(i){ return i.etat==="warn"; }).length;
+  var a = itemsData.filter(function(i){ return i.etat==="alert"; }).length;
+  document.getElementById("stats-bar").innerHTML =
     '<div class="stat"><div class="num">'+t+'</div><div class="lbl">References</div></div>'+
     '<div class="stat"><div class="num">'+d+'</div><div class="lbl">Disponibles</div></div>'+
     '<div class="stat warn"><div class="num">'+w+'</div><div class="lbl">A verifier</div></div>'+
@@ -426,220 +478,290 @@ function renderStats() {
 }
 
 function onDatesChange() {
-  var dep=document.getElementById("cb-depart").value;
-  var ret=document.getElementById("cb-retour").value;
-  if(!dep||!ret){
-    datesActives=false; dispoParDates={};
-    document.getElementById("cb-status").textContent="Saisissez les dates pour voir les disponibilites";
-    document.getElementById("cb-status").className="cb-status";
-    document.getElementById("th-dispo").textContent="Disponible";
+  var dep = document.getElementById("cb-depart").value;
+  var ret = document.getElementById("cb-retour").value;
+  if (!dep || !ret) {
+    datesActives = false; dispoParDates = {};
+    document.getElementById("cb-status").textContent = "Saisissez les dates pour voir les disponibilites";
+    document.getElementById("cb-status").className = "cb-status";
+    document.getElementById("th-dispo").textContent = "Disponible";
     renderTable(); return;
   }
-  document.getElementById("th-dispo").textContent="Dispo sur ces dates";
-  checkDispoParDates(dep,ret);
+  document.getElementById("th-dispo").textContent = "Dispo sur ces dates";
+  checkDispoParDates(dep, ret);
 }
 
-async function checkDispoParDates(dep,ret) {
-  var status=document.getElementById("cb-status");
-  status.textContent="Verification..."; status.className="cb-status";
-  dispoParDates={};
-  itemsData.forEach(function(item){dispoParDates[item.ref]=item.type==="caisse"?1:(item.total||item.dispo||0);});
+async function checkDispoParDates(dep, ret) {
+  var status = document.getElementById("cb-status");
+  status.textContent = "Verification..."; status.className = "cb-status";
+  dispoParDates = {};
+  itemsData.forEach(function(item){ dispoParDates[item.ref] = item.type==="caisse" ? 1 : (item.total || item.dispo || 0); });
   try {
-    var res=await fetch(SCRIPT_URL+"?action=getReservations");
-    var data=await res.json();
-    if(data.reservations&&data.reservations.length){
-      var d1=new Date(dep), d2=new Date(ret);
-      data.reservations.forEach(function(r){
-        var st=r["Statut"]||"";
-        if(st==="Refusé"||st==="Refuse") return;
-        var rd1=parseDateFR(r["Dates départ"]||r["Dates depart"]);
-        var rd2=parseDateFR(r["Date retour"]);
-        if(d1<=rd2&&d2>=rd1){
-          try{
-            JSON.parse(r["Matériel"]||r["Materiel"]||"[]").forEach(function(m){
-              if(dispoParDates[m.ref]!==undefined) dispoParDates[m.ref]=Math.max(0,dispoParDates[m.ref]-(parseInt(m.qty)||1));
+    var res = await fetch(SCRIPT_URL+"?action=getReservations");
+    var data = await res.json();
+    if (data.reservations && data.reservations.length) {
+      var d1 = new Date(dep), d2 = new Date(ret);
+      data.reservations.forEach(function(r) {
+        var st = (r["Statut"] || "").toLowerCase().replace(/[^a-z]/g, "");
+        if (st === "refusé" || st === "refuse" || st === "retourné" || st === "retourne") return;
+        var rd1 = parseDateFR(r["Dates départ"] || r["Dates depart"]);
+        var rd2 = parseDateFR(r["Date retour"]);
+        if (d1 <= rd2 && d2 >= rd1) {
+          try {
+            JSON.parse(r["Matériel"] || r["Materiel"] || "[]").forEach(function(m) {
+              if (dispoParDates[m.ref] !== undefined) dispoParDates[m.ref] = Math.max(0, dispoParDates[m.ref] - (parseInt(m.qty) || 1));
             });
-          }catch(e){}
+          } catch(e) {}
         }
       });
     }
-  } catch(e){}
-  var ind=itemsData.filter(function(i){return dispoParDates[i.ref]===0&&(i.total||i.dispo)>0;}).length;
-  var par=itemsData.filter(function(i){return dispoParDates[i.ref]>0&&dispoParDates[i.ref]<(i.total||i.dispo||0);}).length;
-  if(ind>0){status.textContent=ind+" article(s) indisponible(s)";status.className="cb-status warn";}
-  else if(par>0){status.textContent=par+" article(s) partiellement reserves";status.className="cb-status warn";}
-  else{status.textContent="Tout disponible sur ces dates";status.className="cb-status ok";}
-  datesActives=true; renderTable();
+  } catch(e) {}
+  var ind = itemsData.filter(function(i){ return dispoParDates[i.ref] === 0 && (i.total || i.dispo) > 0; }).length;
+  var par = itemsData.filter(function(i){ return dispoParDates[i.ref] > 0 && dispoParDates[i.ref] < (i.total || i.dispo || 0); }).length;
+  if (ind > 0) { status.textContent = ind+" article(s) indisponible(s)"; status.className = "cb-status warn"; }
+  else if (par > 0) { status.textContent = par+" article(s) partiellement reserves"; status.className = "cb-status warn"; }
+  else { status.textContent = "Tout disponible sur ces dates"; status.className = "cb-status ok"; }
+  datesActives = true; renderTable();
 }
 
-function toggleItem(ref,cb){
-  var item=itemsData.find(function(i){return i.ref===ref;});
-  if(cb.checked){var inp=document.getElementById("qty-"+ref); selection[ref]=item.type==="caisse"?1:parseInt(inp?inp.value:1);}
-  else{delete selection[ref];}
-  cb.closest("tr").classList.toggle("sel",cb.checked); updatePanier();
+function toggleItem(ref, cb) {
+  var item = itemsData.find(function(i){ return i.ref === ref; });
+  if (cb.checked) { var inp = document.getElementById("qty-"+ref); selection[ref] = item.type==="caisse" ? 1 : parseInt(inp ? inp.value : 1); }
+  else { delete selection[ref]; }
+  cb.closest("tr").classList.toggle("sel", cb.checked); updatePanier();
 }
-function adjustQty(ref,delta){
-  var item=itemsData.find(function(i){return i.ref===ref;});
-  var maxQ=item.type==="caisse"?1:(datesActives?(dispoParDates[ref]||0):(item.dispo||0));
-  var inp=document.getElementById("qty-"+ref);
-  var v=Math.max(1,Math.min(maxQ,parseInt(inp.value)+delta)); inp.value=v;
-  if(selection[ref]!==undefined){selection[ref]=v;updatePanier();}
-  var btns=inp.closest(".qty-cell").querySelectorAll(".qb");
-  btns[0].disabled=v<=1; btns[1].disabled=v>=maxQ;
+function adjustQty(ref, delta) {
+  var item = itemsData.find(function(i){ return i.ref === ref; });
+  var maxQ = item.type==="caisse" ? 1 : (datesActives ? (dispoParDates[ref] || 0) : (item.dispo || 0));
+  var inp = document.getElementById("qty-"+ref);
+  var v = Math.max(1, Math.min(maxQ, parseInt(inp.value)+delta)); inp.value = v;
+  if (selection[ref] !== undefined) { selection[ref] = v; updatePanier(); }
+  var btns = inp.closest(".qty-cell").querySelectorAll(".qb");
+  btns[0].disabled = v <= 1; btns[1].disabled = v >= maxQ;
 }
-function setQty(ref,val){
-  var item=itemsData.find(function(i){return i.ref===ref;});
-  var maxQ=datesActives?(dispoParDates[ref]||0):(item.dispo||0);
-  val=Math.max(1,Math.min(maxQ,parseInt(val)||1));
-  document.getElementById("qty-"+ref).value=val;
-  if(selection[ref]!==undefined){selection[ref]=val;updatePanier();}
+function setQty(ref, val) {
+  var item = itemsData.find(function(i){ return i.ref === ref; });
+  var maxQ = datesActives ? (dispoParDates[ref] || 0) : (item.dispo || 0);
+  val = Math.max(1, Math.min(maxQ, parseInt(val) || 1));
+  document.getElementById("qty-"+ref).value = val;
+  if (selection[ref] !== undefined) { selection[ref] = val; updatePanier(); }
 }
-function toggleAll(cb){
-  document.querySelectorAll("#inv-body tr").forEach(function(tr){
-    var rc=tr.querySelector(".rc"); if(!rc||rc.disabled) return;
-    rc.checked=cb.checked;
-    var ref=rc.dataset.ref;
-    var item=itemsData.find(function(i){return i.ref===ref;});
-    if(cb.checked) selection[ref]=item.type==="caisse"?1:(datesActives?(dispoParDates[ref]||1):(item.dispo||1));
+function toggleAll(cb) {
+  document.querySelectorAll("#inv-body tr").forEach(function(tr) {
+    var rc = tr.querySelector(".rc"); if (!rc || rc.disabled) return;
+    rc.checked = cb.checked;
+    var ref = rc.dataset.ref;
+    var item = itemsData.find(function(i){ return i.ref === ref; });
+    if (cb.checked) selection[ref] = item.type==="caisse" ? 1 : (datesActives ? (dispoParDates[ref] || 1) : (item.dispo || 1));
     else delete selection[ref];
-    tr.classList.toggle("sel",cb.checked);
+    tr.classList.toggle("sel", cb.checked);
   }); updatePanier();
 }
-function updatePanier(){
-  var keys=Object.keys(selection);
-  var bar=document.getElementById("panier");
-  if(!keys.length){bar.classList.remove("vis");return;}
+function updatePanier() {
+  var keys = Object.keys(selection);
+  var bar = document.getElementById("panier");
+  if (!keys.length) { bar.classList.remove("vis"); return; }
   bar.classList.add("vis");
-  document.getElementById("pan-cnt").textContent=keys.length;
-  document.getElementById("pan-lbl").textContent=keys.length>1?" articles selectionnes":" article selectionne";
-  document.getElementById("pan-det").textContent=keys.map(function(r){
-    var it=itemsData.find(function(i){return i.ref===r;});
-    return it.type==="caisse"?r:r+"x"+selection[r];
+  document.getElementById("pan-cnt").textContent = keys.length;
+  document.getElementById("pan-lbl").textContent = keys.length > 1 ? " articles selectionnes" : " article selectionne";
+  document.getElementById("pan-det").textContent = keys.map(function(r) {
+    var it = itemsData.find(function(i){ return i.ref === r; });
+    return it.type === "caisse" ? r : r+"x"+selection[r];
   }).join(" - ");
 }
-function clearSelection(){
-  Object.keys(selection).forEach(function(k){delete selection[k];});
-  document.getElementById("check-all").checked=false; renderTable(); updatePanier();
+function clearSelection() {
+  Object.keys(selection).forEach(function(k){ delete selection[k]; });
+  document.getElementById("check-all").checked = false; renderTable(); updatePanier();
 }
-function filteredItems(){
-  return itemsData.filter(function(i){
-    var cm=!catFilter||i.cat===catFilter;
-    var sm=!searchFilter||i.nom.toLowerCase().indexOf(searchFilter)>=0||i.ref.toLowerCase().indexOf(searchFilter)>=0;
-    return cm&&sm;
+function filteredItems() {
+  return itemsData.filter(function(i) {
+    var cm = !catFilter || i.cat === catFilter;
+    var sm = !searchFilter || i.nom.toLowerCase().indexOf(searchFilter) >= 0 || i.ref.toLowerCase().indexOf(searchFilter) >= 0;
+    return cm && sm;
   });
 }
-function openContenu(ref){
-  var it=itemsData.find(function(i){return i.ref===ref;})||ITEMS_LOCAL.find(function(i){return i.ref===ref;});
-  if(!it||!it.contenu) return;
-  document.getElementById("mo-title").textContent=it.nom;
-  document.getElementById("mo-sub").textContent=it.ref+" - Contenu reference";
-  document.getElementById("mo-list").innerHTML=it.contenu.map(function(c){return '<li><span class="cd"></span>'+c+"</li>";}).join("");
+
+function openContenu(ref) {
+  var it = itemsData.find(function(i){ return i.ref === ref; });
+  if (!it || !it.contenu) return;
+  document.getElementById("mo-title").textContent = it.nom;
+  document.getElementById("mo-sub").textContent = it.ref+" - Contenu reference";
+  document.getElementById("mo-list").innerHTML = it.contenu.map(function(c){ return '<li><span class="cd"></span>'+c+"</li>"; }).join("");
   document.getElementById("mo-contenu").classList.add("open");
 }
 
-function goToReservation(){
-  var keys=Object.keys(selection);
-  if(keys.length){
-    document.getElementById("recap-sel").style.display="block";
-    document.getElementById("recap-empty").style.display="none";
-    document.getElementById("recap-items").innerHTML=keys.map(function(r){
-      var it=itemsData.find(function(i){return i.ref===r;});
-      var qt=it.type==="caisse"?"1 caisse":selection[r]+" unite"+(selection[r]>1?"s":"");
+// ── NOTES ──────────────────────────────────────────────────
+
+function openNotes(ref) {
+  var item = itemsData.find(function(i){ return i.ref === ref; });
+  if (!item) return;
+  currentNotesRef = ref;
+  document.getElementById("mo-notes-title").textContent = item.nom;
+  document.getElementById("mo-notes-sub").textContent = item.ref;
+  renderNotesList(item.notes || "");
+  document.getElementById("mo-notes-input").value = "";
+  document.getElementById("mo-notes").classList.add("open");
+}
+
+function renderNotesList(notes) {
+  var list = document.getElementById("mo-notes-list");
+  if (!notes || !notes.trim()) {
+    list.innerHTML = '<div style="color:#7a9a80;font-size:13px;font-style:italic;padding:4px 0">Aucune note.</div>';
+    return;
+  }
+  list.innerHTML = notes.split(" | ").map(function(n) {
+    var m = n.match(/^(\d{2}\/\d{2}) - (.+)$/);
+    if (m) return '<div class="notes-line"><span class="notes-date">'+m[1]+'</span><span>'+m[2]+'</span></div>';
+    return '<div class="notes-line"><span>'+n+'</span></div>';
+  }).join("");
+}
+
+async function submitNote() {
+  var texte = document.getElementById("mo-notes-input").value.trim();
+  if (!texte || !currentNotesRef) return;
+  var btn = document.getElementById("mo-notes-add"); btn.textContent = "..."; btn.disabled = true;
+  try {
+    await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"addCommentaire", ref:currentNotesRef, texte:texte})});
+    var item = itemsData.find(function(i){ return i.ref === currentNotesRef; });
+    if (item) {
+      var today = new Date();
+      var d = ("0"+today.getDate()).slice(-2)+"/"+("0"+(today.getMonth()+1)).slice(-2);
+      var newNote = d+" - "+texte;
+      item.notes = item.notes ? item.notes+" | "+newNote : newNote;
+      renderNotesList(item.notes);
+      renderTable();
+    }
+    document.getElementById("mo-notes-input").value = "";
+  } catch(e) { alert("Erreur lors de l'ajout de la note."); }
+  btn.textContent = "Ajouter"; btn.disabled = false;
+}
+
+// ── RESERVATIONS ──────────────────────────────────────────────
+
+function goToReservation() {
+  var keys = Object.keys(selection);
+  if (keys.length) {
+    document.getElementById("recap-sel").style.display = "block";
+    document.getElementById("recap-empty").style.display = "none";
+    document.getElementById("recap-items").innerHTML = keys.map(function(r) {
+      var it = itemsData.find(function(i){ return i.ref === r; });
+      var qt = it.type==="caisse" ? "1 caisse" : selection[r]+" unite"+(selection[r]>1?"s":"");
       return "<div class='srec-row'><span><span class='r'>"+r+"</span> "+it.nom+"</span><span class='qt'>"+qt+"</span></div>";
     }).join("");
   } else {
-    document.getElementById("recap-sel").style.display="none";
-    document.getElementById("recap-empty").style.display="block";
+    document.getElementById("recap-sel").style.display = "none";
+    document.getElementById("recap-empty").style.display = "block";
   }
-  var camp=document.getElementById("cb-camp").value;
-  var dep=document.getElementById("cb-depart").value;
-  var ret=document.getElementById("cb-retour").value;
-  if(camp) document.getElementById("res-camp").value=camp;
-  if(dep) document.getElementById("res-dep").value=dep;
-  if(ret) document.getElementById("res-ret").value=ret;
+  var camp = document.getElementById("cb-camp").value;
+  var dep = document.getElementById("cb-depart").value;
+  var ret = document.getElementById("cb-retour").value;
+  if (camp) document.getElementById("res-camp").value = camp;
+  if (dep) document.getElementById("res-dep").value = dep;
+  if (ret) document.getElementById("res-ret").value = ret;
   showPage("reservations");
 }
 
-async function envoyerReservation(){
-  var camp=document.getElementById("res-camp").value||document.getElementById("cb-camp").value;
-  var dir=document.getElementById("res-dir").value;
-  var dep=document.getElementById("res-dep").value||document.getElementById("cb-depart").value;
-  var ret=document.getElementById("res-ret").value||document.getElementById("cb-retour").value;
-  var notes=document.getElementById("res-notes").value;
-  if(!camp||!dir||!dep||!ret){alert("Merci de remplir le camp, le directeur et les dates.");return;}
-  var btn=document.getElementById("btn-envoyer"); btn.textContent="Envoi..."; btn.disabled=true;
-  try{
-    await fetch(SCRIPT_URL,{method:"POST",body:JSON.stringify({
-      action:"addReservation",camp:camp,directeur:dir,dateDepart:dep,dateRetour:ret,notes:notes,
-      materiel:JSON.stringify(Object.keys(selection).map(function(ref){
-        var it=itemsData.find(function(i){return i.ref===ref;});
-        return{ref:ref,nom:it?it.nom:ref,qty:selection[ref]};
-      }))
-    })});
-  }catch(e){}
-  showSuccess("sb-res");
-  Object.keys(selection).forEach(function(k){delete selection[k];}); updatePanier(); loadInventaire();
-  btn.textContent="Envoyer la demande"; btn.disabled=false;
-}
+async function envoyerReservation() {
+  var camp = document.getElementById("res-camp").value || document.getElementById("cb-camp").value;
+  var dir = document.getElementById("res-dir").value;
+  var dep = document.getElementById("res-dep").value || document.getElementById("cb-depart").value;
+  var ret = document.getElementById("res-ret").value || document.getElementById("cb-retour").value;
+  var notes = document.getElementById("res-notes").value;
+  if (!camp || !dir || !dep || !ret) { alert("Merci de remplir le camp, le directeur et les dates."); return; }
 
-async function loadReservations(){
-  try{
-    var res=await fetch(SCRIPT_URL+"?action=getReservations");
-    var data=await res.json();
-    var tbody=document.getElementById("res-tbody");
-    if(!data.reservations||!data.reservations.length){
-      tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:#7a9a80;font-size:13px">Aucune reservation.</td></tr>';
+  // Verification front-end des disponibilites
+  if (datesActives) {
+    var indispos = Object.keys(selection).filter(function(ref) {
+      return (dispoParDates[ref] !== undefined ? dispoParDates[ref] : 0) < (selection[ref] || 1);
+    });
+    if (indispos.length > 0) {
+      alert("Certains articles ne sont plus disponibles sur ces dates :\n" + indispos.join(", "));
       return;
     }
-    tbody.innerHTML="";
-    data.reservations.forEach(function(r){
-      var mat="-";
-      try{mat=JSON.parse(r["Mat\u00e9riel"]||r["Materiel"]||"[]").map(function(m){return m.ref;}).join(", ");}catch(e){}
-      var st=r["Statut"]||"-";
-      var stClean=st.toLowerCase().replace(/[^a-z]/g,""); var bc=stClean==="valide"?"ok":(stClean==="refuse"?"alrt":"warn");
-      var canEdit=(st==="En attente"||stClean==="valide");
-      var tr=document.createElement("tr");
-      tr.innerHTML="<td><strong>"+(r["Camp"]||"")+"</strong></td>"
+  }
+
+  var btn = document.getElementById("btn-envoyer"); btn.textContent = "Envoi..."; btn.disabled = true;
+  try {
+    var res = await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({
+      action:"addReservation", camp:camp, directeur:dir, dateDepart:dep, dateRetour:ret, notes:notes,
+      materiel:JSON.stringify(Object.keys(selection).map(function(ref) {
+        var it = itemsData.find(function(i){ return i.ref === ref; });
+        return {ref:ref, nom:it ? it.nom : ref, qty:selection[ref]};
+      }))
+    })});
+    var result = await res.json();
+    if (result.error === "CONFLICT") {
+      var msg = "Conflits de disponibilite detectes :\n" + result.details.map(function(d) {
+        return "- "+d.ref+" "+d.nom+" : demande "+d.demande+", disponible "+d.dispo;
+      }).join("\n");
+      alert(msg);
+      btn.textContent = "Envoyer la demande"; btn.disabled = false;
+      return;
+    }
+  } catch(e) {}
+  showSuccess("sb-res");
+  Object.keys(selection).forEach(function(k){ delete selection[k]; }); updatePanier(); loadInventaire();
+  btn.textContent = "Envoyer la demande"; btn.disabled = false;
+}
+
+async function loadReservations() {
+  try {
+    var res = await fetch(SCRIPT_URL+"?action=getReservations");
+    var data = await res.json();
+    var tbody = document.getElementById("res-tbody");
+    if (!data.reservations || !data.reservations.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#7a9a80;font-size:13px">Aucune reservation.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = "";
+    data.reservations.forEach(function(r) {
+      var mat = "-";
+      try { mat = JSON.parse(r["Matériel"] || r["Materiel"] || "[]").map(function(m){ return m.ref; }).join(", "); } catch(e) {}
+      var st = r["Statut"] || "-";
+      var stClean = st.toLowerCase().replace(/[^a-z]/g, ""); var bc = stClean==="valide"?"ok":(stClean==="refuse"?"alrt":"warn");
+      var canEdit = (st==="En attente" || stClean==="valide");
+      var tr = document.createElement("tr");
+      tr.innerHTML = "<td><strong>"+(r["Camp"]||"")+"</strong></td>"
         +"<td>"+(r["Directeur"]||"")+"</td>"
         +'<td style="font-size:12px">'+mat+"</td>"
-        +"<td>"+(r["Dates d\u00e9part"]||r["Dates depart"]||"-")+"</td>"
+        +"<td>"+(r["Dates départ"]||r["Dates depart"]||"-")+"</td>"
         +"<td>"+(r["Date retour"]||"-")+"</td>"
-        +'<td><span class="bdg '+bc+'">'+ st+"</span></td>"
+        +'<td><span class="bdg '+bc+'">'+st+"</span></td>"
         +"<td>"+(canEdit?'<button class="btn btn-o btn-sm" id="edit-btn">Modifier</button>':"")+"</td>";
-      if(canEdit){
-        var editBtn=tr.querySelector("#edit-btn");
-        (function(rData){editBtn.addEventListener("click",function(){ouvrirModif(rData);});})(r);
+      if (canEdit) {
+        var editBtn = tr.querySelector("#edit-btn");
+        (function(rData){ editBtn.addEventListener("click", function(){ ouvrirModif(rData); }); })(r);
       }
       tbody.appendChild(tr);
     });
-  }catch(e){}
+  } catch(e) {}
 }
 
-function ouvrirModif(r){
-  currentModifId=r["ID"]; currentModifMat=r["Mat\u00e9riel"]||r["Materiel"]||"[]";
-  document.getElementById("mo-modif-id").textContent=(r["ID"]||"")+" - "+(r["Camp"]||"");
-  document.getElementById("modif-camp").value=r["Camp"]||"";
-  document.getElementById("modif-dir").value=r["Directeur"]||"";
-  document.getElementById("modif-dep").value=formatDateInput(r["Dates d\u00e9part"]||r["Dates depart"]||"");
-  document.getElementById("modif-ret").value=formatDateInput(r["Date retour"]||"");
-  document.getElementById("modif-notes").value=r["Notes"]||"";
-  try{
-    var mat=JSON.parse(currentModifMat).map(function(m){return m.qty>1?m.ref+"x"+m.qty:m.ref;}).join(", ");
-    document.getElementById("modif-mat").value=mat;
-  }catch(e){document.getElementById("modif-mat").value="";}
+function ouvrirModif(r) {
+  currentModifId = r["ID"]; currentModifMat = r["Matériel"] || r["Materiel"] || "[]";
+  document.getElementById("mo-modif-id").textContent = (r["ID"]||"")+" - "+(r["Camp"]||"");
+  document.getElementById("modif-camp").value = r["Camp"] || "";
+  document.getElementById("modif-dir").value = r["Directeur"] || "";
+  document.getElementById("modif-dep").value = formatDateInput(r["Dates départ"] || r["Dates depart"] || "");
+  document.getElementById("modif-ret").value = formatDateInput(r["Date retour"] || "");
+  document.getElementById("modif-notes").value = r["Notes"] || "";
+  try {
+    var mat = JSON.parse(currentModifMat).map(function(m){ return m.qty>1 ? m.ref+"x"+m.qty : m.ref; }).join(", ");
+    document.getElementById("modif-mat").value = mat;
+  } catch(e) { document.getElementById("modif-mat").value = ""; }
   document.getElementById("mo-modif").classList.add("open");
 }
 
-async function sauvegarderModif(){
-  if(!currentModifId) return;
-  var btn=document.getElementById("btn-modif-save"); btn.textContent="Envoi..."; btn.disabled=true;
-  var matText=document.getElementById("modif-mat").value;
-  var matParsed=matText.split(",").map(function(s){
-    s=s.trim(); var parts=s.split(/[xX]/); return{ref:parts[0].trim(),nom:parts[0].trim(),qty:parseInt(parts[1])||1};
-  }).filter(function(m){return m.ref;});
-  try{
-    await fetch(SCRIPT_URL,{method:"POST",body:JSON.stringify({
-      action:"updateReservation",id:currentModifId,
+async function sauvegarderModif() {
+  if (!currentModifId) return;
+  var btn = document.getElementById("btn-modif-save"); btn.textContent = "Envoi..."; btn.disabled = true;
+  var matText = document.getElementById("modif-mat").value;
+  var matParsed = matText.split(",").map(function(s) {
+    s = s.trim(); var parts = s.split(/[xX]/); return {ref:parts[0].trim(), nom:parts[0].trim(), qty:parseInt(parts[1])||1};
+  }).filter(function(m){ return m.ref; });
+  try {
+    await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({
+      action:"updateReservation", id:currentModifId,
       camp:document.getElementById("modif-camp").value,
       directeur:document.getElementById("modif-dir").value,
       dateDepart:document.getElementById("modif-dep").value,
@@ -649,101 +771,154 @@ async function sauvegarderModif(){
     })});
     document.getElementById("mo-modif").classList.remove("open");
     loadReservations();
-  }catch(e){}
-  btn.textContent="Enregistrer"; btn.disabled=false;
+  } catch(e) {}
+  btn.textContent = "Enregistrer"; btn.disabled = false;
 }
 
-async function loadDeparts(){
-  var container=document.getElementById("dep-container");
-  container.innerHTML='<div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">Chargement...</div>';
-  try{
-    var res=await fetch(SCRIPT_URL+"?action=getReservations");
-    var data=await res.json();
-    var today=new Date(); today.setHours(0,0,0,0);
-    var liste=(data.reservations||[]).filter(function(r){
-      var st=r["Statut"]||""; var stClean=st.toLowerCase().replace(/[^a-z]/g,""); if(stClean!=="valide") return false;
-      var dep=parseDateFR(r["Dates d\u00e9part"]||r["Dates depart"]);
-      return (today-dep)/86400000<=1;
+// ── DEPARTS ───────────────────────────────────────────────────
+
+async function loadDeparts() {
+  var container = document.getElementById("dep-container");
+  container.innerHTML = '<div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">Chargement...</div>';
+  try {
+    var res = await fetch(SCRIPT_URL+"?action=getReservations");
+    var data = await res.json();
+    var liste = (data.reservations || []).filter(function(r) {
+      var st = (r["Statut"] || "").toLowerCase().replace(/[^a-z]/g, "");
+      return st === "valide";
     });
-    if(!liste.length){container.innerHTML='<div style="padding:24px;color:#7a9a80;font-size:13px;text-align:center">Aucun depart a preparer.</div>';return;}
-    container.innerHTML="";
-    liste.forEach(function(r){
-      var materiel=[]; try{materiel=JSON.parse(r["Mat\u00e9riel"]||r["Materiel"]||"[]");}catch(e){}
-      var total=materiel.length;
-      var dep=parseDateFR(r["Dates d\u00e9part"]||r["Dates depart"]);
-      var isToday=dep.toDateString()===today.toDateString();
-      var card=document.createElement("div"); card.className="dc";
-      card.innerHTML="<div class=\"dc-hd\">"
+    if (!liste.length) { container.innerHTML = '<div style="padding:24px;color:#7a9a80;font-size:13px;text-align:center">Aucun depart a preparer.</div>'; return; }
+    container.innerHTML = "";
+    liste.forEach(function(r) {
+      var materiel = []; try { materiel = JSON.parse(r["Matériel"] || r["Materiel"] || "[]"); } catch(e) {}
+      var total = materiel.length;
+      var card = document.createElement("div"); card.className = "dc";
+      card.innerHTML = "<div class=\"dc-hd\">"
         +"<div><div class=\"dc-ttl\">"+(r["Camp"]||"")+" - "+(r["Directeur"]||"")+"</div>"
-        +"<div class=\"dc-meta\">Depart "+(isToday?"AUJOURD'HUI":"le "+(r["Dates d\u00e9part"]||r["Dates depart"]||""))+" - Retour le "+(r["Date retour"]||"")+"</div></div>"
+        +"<div class=\"dc-meta\">Depart le "+(r["Dates départ"]||r["Dates depart"]||"?")+" - Retour le "+(r["Date retour"]||"?")+"</div></div>"
         +"<span id=\"prog-lbl-"+r["ID"]+"\" style=\"font-size:13px;color:#7a9a80\">0 / "+total+" verifie(s)</span></div>"
         +"<div class=\"dp\"><div class=\"dpb\" id=\"prog-bar-"+r["ID"]+"\" style=\"width:0%\"></div></div>";
-      materiel.forEach(function(m,idx){
-        var loc=itemsData.find(function(i){return i.ref===m.ref;}); var isC=loc&&loc.type==="caisse";
-        var di=document.createElement("div"); di.className="di";
-        var dck=document.createElement("input"); dck.type="checkbox"; dck.className="dck";
-        var nd=document.createElement("div"); nd.style.flex="1";
-        nd.innerHTML="<div class=\"di-name\">"+(isC?"[C] ":"")+m.nom+"</div><div class=\"di-meta\"><span class=\"ref\">"+m.ref+"</span>"+(!isC&&m.qty>1?" x"+m.qty:"")+"</div>";
-        (function(rid,tot,ck,d){
-          ck.addEventListener("change",function(){updateDepartProgress(rid,tot,ck,d);});
-          d.addEventListener("click",function(e){if(e.target.type==="checkbox")return;ck.checked=!ck.checked;ck.dispatchEvent(new Event("change"));});
-        })(r["ID"],total,dck,di);
-        di.appendChild(dck); di.appendChild(nd); card.appendChild(di);
+
+      materiel.forEach(function(m, idx) {
+        var loc = itemsData.find(function(i){ return i.ref === m.ref; });
+        var isC = loc && loc.type === "caisse";
+        var maxQty = isC ? 1 : (parseInt(m.qty) || 1);
+
+        var di = document.createElement("div"); di.className = "di";
+        di.dataset.ref = m.ref; di.dataset.nom = m.nom;
+
+        var dck = document.createElement("input"); dck.type = "checkbox"; dck.className = "dck"; dck.checked = true;
+
+        var nd = document.createElement("div"); nd.style.flex = "1";
+        nd.innerHTML = "<div class=\"di-name\">"+(isC?"[C] ":"")+m.nom+"</div>"
+          +"<div class=\"di-meta\"><span class=\"ref\">"+m.ref+"</span></div>";
+
+        // Stepper quantite
+        var qtyWrap = document.createElement("div"); qtyWrap.className = "qty-cell";
+        var bm = document.createElement("button"); bm.className = "qb"; bm.textContent = "-"; bm.disabled = maxQty <= 1;
+        var inp = document.createElement("input"); inp.type = "number"; inp.className = "qv dep-qty";
+        inp.value = maxQty; inp.min = 0; inp.max = maxQty;
+        var bp = document.createElement("button"); bp.className = "qb"; bp.textContent = "+"; bp.disabled = true;
+        var mx = document.createElement("span"); mx.className = "qmax"; mx.textContent = "/ "+maxQty;
+
+        (function(rid, tot, ck, d, qinp, mxQ, bmb, bpb) {
+          bmb.addEventListener("click", function() {
+            var v = Math.max(0, parseInt(qinp.value) - 1); qinp.value = v;
+            bmb.disabled = v <= 0; bpb.disabled = v >= mxQ;
+            ck.checked = v > 0; d.classList.toggle("chk", !ck.checked);
+            updateDepartProgress(rid, tot);
+          });
+          bpb.addEventListener("click", function() {
+            var v = Math.min(mxQ, parseInt(qinp.value) + 1); qinp.value = v;
+            bmb.disabled = v <= 0; bpb.disabled = v >= mxQ;
+            ck.checked = v > 0; d.classList.toggle("chk", !ck.checked);
+            updateDepartProgress(rid, tot);
+          });
+          ck.addEventListener("change", function() {
+            qinp.value = ck.checked ? mxQ : 0;
+            bmb.disabled = !ck.checked; bpb.disabled = ck.checked;
+            d.classList.toggle("chk", !ck.checked);
+            updateDepartProgress(rid, tot);
+          });
+          d.addEventListener("click", function(e) {
+            if (e.target.type === "checkbox" || e.target.tagName === "BUTTON" || e.target.tagName === "INPUT") return;
+            ck.checked = !ck.checked; ck.dispatchEvent(new Event("change"));
+          });
+        })(r["ID"], total, dck, di, inp, maxQty, bm, bp);
+
+        qtyWrap.appendChild(bm); qtyWrap.appendChild(inp); qtyWrap.appendChild(bp); qtyWrap.appendChild(mx);
+        di.appendChild(dck); di.appendChild(nd); di.appendChild(qtyWrap);
+        card.appendChild(di);
       });
-      var footer=document.createElement("div"); footer.style.cssText="padding:12px 20px;border-top:1px solid #e8f0ea;display:flex;justify-content:flex-end";
-      var fbtn=document.createElement("button"); fbtn.className="btn btn-p btn-sm"; fbtn.textContent="Confirmer le depart";
-      (function(rid,fb){fb.addEventListener("click",function(){confirmerDepart(rid,fb);});})(r["ID"],fbtn);
-      footer.appendChild(fbtn); card.appendChild(footer); container.appendChild(card);
+
+      var footer = document.createElement("div"); footer.style.cssText = "padding:12px 20px;border-top:1px solid #e8f0ea;display:flex;justify-content:flex-end";
+      var fbtn = document.createElement("button"); fbtn.className = "btn btn-p btn-sm"; fbtn.textContent = "Confirmer le depart";
+      (function(rid, fb, c) { fb.addEventListener("click", function(){ confirmerDepart(rid, fb, c); }); })(r["ID"], fbtn, card);
+      footer.appendChild(fbtn); card.appendChild(footer);
+      container.appendChild(card);
     });
-  }catch(e){container.innerHTML='<div style="padding:20px;color:#c07060;font-size:13px;text-align:center">Erreur de chargement.</div>';}
+  } catch(e) { container.innerHTML = '<div style="padding:20px;color:#c07060;font-size:13px;text-align:center">Erreur de chargement.</div>'; }
 }
 
-function updateDepartProgress(resId,total,cb,item){
-  item.classList.toggle("chk",cb.checked);
-  var card=cb.closest(".dc"), checked=card.querySelectorAll(".dck:checked").length;
-  document.getElementById("prog-lbl-"+resId).textContent=checked+" / "+total+" verifie(s)";
-  document.getElementById("prog-bar-"+resId).style.width=Math.round(checked/total*100)+"%";
+function updateDepartProgress(resId, total) {
+  var card = document.getElementById("prog-lbl-"+resId).closest(".dc");
+  var checked = card.querySelectorAll(".dck:checked").length;
+  document.getElementById("prog-lbl-"+resId).textContent = checked+" / "+total+" verifie(s)";
+  document.getElementById("prog-bar-"+resId).style.width = Math.round(checked / total * 100)+"%";
 }
 
-async function confirmerDepart(resId,btn){
-  btn.textContent="Envoi..."; btn.disabled=true;
-  try{
-    await fetch(SCRIPT_URL,{method:"POST",body:JSON.stringify({action:"updateStatut",id:resId,statut:"Parti"})});
-    btn.textContent="Depart confirme"; btn.closest(".dc").style.opacity="0.5";
-    setTimeout(function(){loadDeparts();},1500);
-  }catch(e){btn.textContent="Confirmer le depart";btn.disabled=false;}
+async function confirmerDepart(resId, btn, card) {
+  var materielAuDepart = [];
+  card.querySelectorAll(".di").forEach(function(di) {
+    var qtyInput = di.querySelector(".dep-qty");
+    var qty = parseInt(qtyInput ? qtyInput.value : 1) || 0;
+    if (qty > 0) materielAuDepart.push({ref:di.dataset.ref, nom:di.dataset.nom, qty:qty});
+  });
+  btn.textContent = "Envoi..."; btn.disabled = true;
+  try {
+    await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"confirmerDepart", id:resId, materielAuDepart:materielAuDepart})});
+    btn.textContent = "Depart confirme"; card.style.opacity = "0.5";
+    setTimeout(function(){ loadDeparts(); }, 1500);
+  } catch(e) { btn.textContent = "Confirmer le depart"; btn.disabled = false; }
 }
 
-async function loadRetours(){
-  var container=document.getElementById("ret-container");
-  container.innerHTML='<div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">Chargement...</div>';
-  try{
-    var res=await fetch(SCRIPT_URL+"?action=getReservations");
-    var data=await res.json();
-    var today=new Date(); today.setHours(0,0,0,0);
-    var liste=(data.reservations||[]).filter(function(r){
-      var st=r["Statut"]||"";
-      var stClean=st.toLowerCase().replace(/[^a-z]/g,""); if(["refuse","retourne","enattente"].indexOf(stClean)>=0) return false; if(!stClean||stClean==="valide") return false;
-      var dep=parseDateFR(r["Dates d\u00e9part"]||r["Dates depart"]); return dep<=today;
+// ── RETOURS ───────────────────────────────────────────────────
+
+async function loadRetours() {
+  var container = document.getElementById("ret-container");
+  container.innerHTML = '<div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">Chargement...</div>';
+  try {
+    var res = await fetch(SCRIPT_URL+"?action=getReservations");
+    var data = await res.json();
+    var liste = (data.reservations || []).filter(function(r) {
+      var st = (r["Statut"] || "").toLowerCase().replace(/[^a-z]/g, "");
+      return st === "parti";
     });
-    if(!liste.length){container.innerHTML='<div style="padding:24px;color:#7a9a80;font-size:13px;text-align:center">Aucun retour en attente.</div>';return;}
-    container.innerHTML="";
-    liste.forEach(function(r){
-      var materiel=[]; try{materiel=JSON.parse(r["Mat\u00e9riel"]||r["Materiel"]||"[]");}catch(e){}
-      var retDate=parseDateFR(r["Date retour"]), enRetard=retDate<today;
-      var card=document.createElement("div"); card.className="rc-card";
-      card.dataset.camp=r["Camp"]; card.dataset.dir=r["Directeur"];
-      var succId="succ-"+r["ID"];
-      card.innerHTML="<div class=\"rc-hd\">"
+    if (!liste.length) { container.innerHTML = '<div style="padding:24px;color:#7a9a80;font-size:13px;text-align:center">Aucun retour en attente.</div>'; return; }
+    container.innerHTML = "";
+    liste.forEach(function(r) {
+      // Utilise Materiel au depart si disponible, sinon Materiel
+      var materiel = [];
+      try {
+        var matKey = r["Matériel au départ"] || r["Materiel au depart"] || "";
+        materiel = JSON.parse(matKey || r["Matériel"] || r["Materiel"] || "[]");
+      } catch(e) {}
+      var today = new Date(); today.setHours(0,0,0,0);
+      var retDate = parseDateFR(r["Date retour"]), enRetard = retDate < today;
+      var card = document.createElement("div"); card.className = "rc-card";
+      card.dataset.camp = r["Camp"]; card.dataset.dir = r["Directeur"];
+      var succId = "succ-"+r["ID"];
+      card.innerHTML = "<div class=\"rc-hd\">"
         +"<div><div class=\"rc-ttl\">"+(r["Camp"]||"")+" - "+(r["Directeur"]||"")+"</div>"
-        +"<div class=\"rc-meta\">Parti le "+(r["Dates d\u00e9part"]||r["Dates depart"]||"")+" - Retour prevu "+(r["Date retour"]||"")+(enRetard?" EN RETARD":"")+"</div></div>"
+        +"<div class=\"rc-meta\">Parti le "+(r["Dates départ"]||r["Dates depart"]||"")+" - Retour prevu "+(r["Date retour"]||"")+(enRetard?" <strong style='color:#D94F3D'>EN RETARD</strong>":"")+"</div></div>"
         +"<div style=\"display:flex;gap:8px;align-items:center\"><span class=\"rc-suc\" id=\""+succId+"\">Enregistre !</span>"
         +"<button class=\"btn btn-p btn-sm\" id=\"btn-ret-"+r["ID"]+"\">Valider le retour</button></div></div>";
-      materiel.forEach(function(m,idx){
-        var loc=itemsData.find(function(i){return i.ref===m.ref;}); var isC=loc&&loc.type==="caisse";
-        if(isC){var sl=document.createElement("div");sl.className="sec-lbl";sl.textContent=m.ref+" - "+m.nom;card.appendChild(sl);}
-        var art=document.createElement("div"); art.className="ra";
-        art.innerHTML="<div class=\"ra-name\">"+(!isC?'<span class="ref">'+m.ref+"</span> ":"")+m.nom+(!isC&&m.qty>1?" (x"+m.qty+" partis)":"")+"</div>"
+
+      materiel.forEach(function(m, idx) {
+        var loc = itemsData.find(function(i){ return i.ref === m.ref; }); var isC = loc && loc.type === "caisse";
+        if (isC) { var sl = document.createElement("div"); sl.className = "sec-lbl"; sl.textContent = m.ref+" - "+m.nom; card.appendChild(sl); }
+        var art = document.createElement("div"); art.className = "ra";
+        art.innerHTML = "<div class=\"ra-name\">"+(!isC?'<span class="ref">'+m.ref+"</span> ":"")+m.nom+(!isC&&m.qty>1?" (x"+m.qty+" partis)":"")+"</div>"
           +"<div class=\"rfs\">"
           +(!isC?"<div class=\"rf\" style=\"max-width:100px\"><label>Qte retournee</label><input type=\"number\" id=\"qte-"+r["ID"]+"-"+idx+"\" value=\""+m.qty+"\" min=\"0\" max=\""+m.qty+"\"></div>":"")
           +"<div class=\"rf\" style=\"max-width:200px\"><label>Etat</label><select id=\"etat-"+r["ID"]+"-"+idx+"\">"
@@ -752,83 +927,92 @@ async function loadRetours(){
         card.appendChild(art);
       });
       container.appendChild(card);
-      var btnRet=document.getElementById("btn-ret-"+r["ID"]);
-      if(btnRet){(function(rid,mat,c){btnRet.addEventListener("click",function(){validerRetour(rid,mat,c,this);});})(r["ID"],materiel,card);}
+      var btnRet = document.getElementById("btn-ret-"+r["ID"]);
+      if (btnRet) { (function(rid, mat, c){ btnRet.addEventListener("click", function(){ validerRetour(rid, mat, c, this); }); })(r["ID"], materiel, card); }
     });
-  }catch(e){container.innerHTML='<div style="padding:20px;color:#c07060;font-size:13px;text-align:center">Erreur de chargement.</div>';}
+  } catch(e) { container.innerHTML = '<div style="padding:20px;color:#c07060;font-size:13px;text-align:center">Erreur de chargement.</div>'; }
 }
 
-async function validerRetour(resId,materiel,card,btn){
-  var articles=materiel.map(function(m,idx){return{
-    ref:m.ref,nom:m.nom,
+async function validerRetour(resId, materiel, card, btn) {
+  var articles = materiel.map(function(m, idx){ return {
+    ref:m.ref, nom:m.nom,
     qteRetournee:(document.getElementById("qte-"+resId+"-"+idx)||{value:m.qty}).value,
     etat:(document.getElementById("etat-"+resId+"-"+idx)||{value:"Bon etat"}).value,
     observations:(document.getElementById("obs-"+resId+"-"+idx)||{value:""}).value
-  };});
-  btn.textContent="Envoi..."; btn.disabled=true;
-  try{
-    await fetch(SCRIPT_URL,{method:"POST",body:JSON.stringify({action:"addRetour",reservationId:resId,camp:card.dataset.camp,directeur:card.dataset.dir,articles:articles})});
-    await fetch(SCRIPT_URL,{method:"POST",body:JSON.stringify({action:"updateStatut",id:resId,statut:"Retourne"})});
+  }; });
+  btn.textContent = "Envoi..."; btn.disabled = true;
+  try {
+    await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"addRetour", reservationId:resId, camp:card.dataset.camp, directeur:card.dataset.dir, articles:articles})});
     document.getElementById("succ-"+resId).classList.add("show");
-    btn.style.display="none"; setTimeout(function(){loadRetours();},2000);
-  }catch(e){btn.textContent="Valider le retour";btn.disabled=false;}
+    btn.style.display = "none";
+    setTimeout(function(){ loadRetours(); }, 2000);
+  } catch(e) { btn.textContent = "Valider le retour"; btn.disabled = false; }
 }
 
-async function loadHistorique(){
-  var tl=document.getElementById("his-tl");
-  tl.innerHTML='<div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">Chargement...</div>';
-  try{
-    var res=await fetch(SCRIPT_URL+"?action=getHistorique");
-    var data=await res.json();
-    if(!data.mouvements||!data.mouvements.length){
-      tl.innerHTML='<div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">Aucun mouvement enregistre.</div>';
+// ── HISTORIQUE ────────────────────────────────────────────────
+
+async function loadHistorique() {
+  var tl = document.getElementById("his-tl");
+  tl.innerHTML = '<div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">Chargement...</div>';
+  try {
+    var res = await fetch(SCRIPT_URL+"?action=getHistorique");
+    var data = await res.json();
+    if (!data.mouvements || !data.mouvements.length) {
+      tl.innerHTML = '<div style="padding:20px;color:#7a9a80;font-size:13px;text-align:center">Aucun mouvement enregistre.</div>';
       return;
     }
-    var dotCls={Reservation:"out",Modification:"out",Valide:"out",Parti:"out",Retour:"in",Retourne:"in",Refuse:"iss"};
-    tl.innerHTML=data.mouvements.map(function(m){
-      var type=m["Type"]||""; var dc=dotCls[type]||"out";
+    var dotCls = {Réservation:"out",Reservation:"out",Modification:"out","Validé":"out",Valide:"out",Parti:"out",Retour:"in",Retourné:"in",Retourne:"in","Refusé":"iss",Refuse:"iss"};
+    tl.innerHTML = data.mouvements.map(function(m) {
+      var type = m["Type"] || ""; var dc = dotCls[type] || "out";
       return '<div class="tl-item"><div class="tl-dot '+dc+'"></div><div>'
         +'<div class="tl-ttl">'+type+" - "+(m["Camp"]||"")+" ("+(m["Directeur"]||"")+")</div>"
-        +'<div class="tl-sub">'+( m["Detail"]||m["D\u00e9tail"]||"")+" - "+(m["Date"]||"")+"</div>"
-        +"<div style=\"margin-top:4px\"><span class=\"ref\">"+(m["Reservation ID"]||m["R\u00e9servation ID"]||"")+"</span></div>"
+        +'<div class="tl-sub">'+(m["Détail"]||m["Detail"]||"")+" - "+(m["Date"]||"")+"</div>"
+        +"<div style=\"margin-top:4px\"><span class=\"ref\">"+(m["Réservation ID"]||m["Reservation ID"]||"")+"</span></div>"
         +"</div></div>";
     }).join("");
-  }catch(e){
-    tl.innerHTML='<div style="padding:20px;color:#c07060;font-size:13px;text-align:center">Erreur de chargement.</div>';
-  }
+  } catch(e) { tl.innerHTML = '<div style="padding:20px;color:#c07060;font-size:13px;text-align:center">Erreur de chargement.</div>'; }
 }
 
+// ── INIT ──────────────────────────────────────────────────────
+
 document.addEventListener("DOMContentLoaded", function() {
-  document.getElementById("tab-inv").addEventListener("click", function(){showPage("inventaire");});
-  document.getElementById("tab-res").addEventListener("click", function(){showPage("reservations");});
-  document.getElementById("tab-dep").addEventListener("click", function(){showPage("departs");});
-  document.getElementById("tab-ret").addEventListener("click", function(){showPage("retours");});
-  document.getElementById("tab-his").addEventListener("click", function(){showPage("historique");});
-  document.getElementById("check-all").addEventListener("change", function(){toggleAll(this);});
+  document.getElementById("tab-inv").addEventListener("click", function(){ showPage("inventaire"); });
+  document.getElementById("tab-res").addEventListener("click", function(){ showPage("reservations"); });
+  document.getElementById("tab-dep").addEventListener("click", function(){ showPage("departs"); });
+  document.getElementById("tab-ret").addEventListener("click", function(){ showPage("retours"); });
+  document.getElementById("tab-his").addEventListener("click", function(){ showPage("historique"); });
+  document.getElementById("check-all").addEventListener("change", function(){ toggleAll(this); });
   document.getElementById("pan-clr").addEventListener("click", clearSelection);
   document.getElementById("pan-btn").addEventListener("click", goToReservation);
   document.getElementById("btn-envoyer").addEventListener("click", envoyerReservation);
-  document.getElementById("btn-retour-inv").addEventListener("click", function(){showPage("inventaire");});
-  document.getElementById("mo-cls").addEventListener("click", function(){document.getElementById("mo-contenu").classList.remove("open");});
-  document.getElementById("mo-ok").addEventListener("click", function(){document.getElementById("mo-contenu").classList.remove("open");});
-  document.getElementById("mo-contenu").addEventListener("click", function(e){if(e.target===this)this.classList.remove("open");});
-  document.getElementById("mo-modif-cls").addEventListener("click", function(){document.getElementById("mo-modif").classList.remove("open");});
-  document.getElementById("btn-modif-cancel").addEventListener("click", function(){document.getElementById("mo-modif").classList.remove("open");});
+  document.getElementById("btn-retour-inv").addEventListener("click", function(){ showPage("inventaire"); });
+  // Modale contenu
+  document.getElementById("mo-cls").addEventListener("click", function(){ document.getElementById("mo-contenu").classList.remove("open"); });
+  document.getElementById("mo-ok").addEventListener("click", function(){ document.getElementById("mo-contenu").classList.remove("open"); });
+  document.getElementById("mo-contenu").addEventListener("click", function(e){ if(e.target===this) this.classList.remove("open"); });
+  // Modale modification
+  document.getElementById("mo-modif-cls").addEventListener("click", function(){ document.getElementById("mo-modif").classList.remove("open"); });
+  document.getElementById("btn-modif-cancel").addEventListener("click", function(){ document.getElementById("mo-modif").classList.remove("open"); });
   document.getElementById("btn-modif-save").addEventListener("click", sauvegarderModif);
-  document.getElementById("mo-modif").addEventListener("click", function(e){if(e.target===this)this.classList.remove("open");});
+  document.getElementById("mo-modif").addEventListener("click", function(e){ if(e.target===this) this.classList.remove("open"); });
+  // Modale notes
+  document.getElementById("mo-notes-cls").addEventListener("click", function(){ document.getElementById("mo-notes").classList.remove("open"); });
+  document.getElementById("mo-notes-close").addEventListener("click", function(){ document.getElementById("mo-notes").classList.remove("open"); });
+  document.getElementById("mo-notes").addEventListener("click", function(e){ if(e.target===this) this.classList.remove("open"); });
+  document.getElementById("mo-notes-add").addEventListener("click", submitNote);
+  document.getElementById("mo-notes-input").addEventListener("keydown", function(e){ if(e.key==="Enter") submitNote(); });
+  // Barre camp
   document.getElementById("cb-depart").addEventListener("change", onDatesChange);
   document.getElementById("cb-retour").addEventListener("change", onDatesChange);
-  document.getElementById("search-input").addEventListener("input", function(){searchFilter=this.value.toLowerCase();renderTable();});
-  document.querySelectorAll(".chip").forEach(function(chip){
-    chip.addEventListener("click", function(){
-      document.querySelectorAll(".chip").forEach(function(c){c.classList.remove("active");});
-      chip.classList.add("active"); catFilter=chip.dataset.cat; renderTable();
+  document.getElementById("search-input").addEventListener("input", function(){ searchFilter = this.value.toLowerCase(); renderTable(); });
+  document.querySelectorAll(".chip").forEach(function(chip) {
+    chip.addEventListener("click", function() {
+      document.querySelectorAll(".chip").forEach(function(c){ c.classList.remove("active"); });
+      chip.classList.add("active"); catFilter = chip.dataset.cat; renderTable();
     });
   });
   loadInventaire();
 });
-
-
 
 </script>
 </body>
