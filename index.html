@@ -314,7 +314,7 @@ tr.ir.sel td:first-child{border-left:3px solid #4CAF6F}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxUECSqRaxnOMgtmBDXLV5ldot1b9SjRaWX97Rg18FrMmV6ZAGD0QQBm_I7aGydFWrQ_A/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRjICKJ-HNf4_9HAgcAt8g-GVvtGdzyAjLWlmaNwWCdEXHmLtAyhLGi8ugR01w8xr7uA/exec';
 
 var CAT_LABELS = {tentes:"Tentes",cuisine:"Cuisine",sport:"Sport",bureau:"Bureautique",camping:"Camping",loisirs:"Loisirs",linge:"Linge",mobilier:"Mobilier",divers:"Divers",hygiene:"Hygiene"};
 var CAT_REV = {Tentes:"tentes",Cuisine:"cuisine",Sport:"sport",Bureautique:"bureau",Camping:"camping",Loisirs:"loisirs",Linge:"linge",Mobilier:"mobilier",Divers:"divers","Hygiène":"hygiene",Hygiene:"hygiene"};
@@ -324,6 +324,8 @@ var itemsData = [], dispoParDates = {}, datesActives = false;
 var selection = {}, catFilter = "", searchFilter = "";
 var currentModifId = null, currentModifMat = null;
 var currentNotesRef = null;
+
+function resId(r) { return r["ID"] || r["Id"] || r["id"] || ""; }
 
 function normSt(s) {
   return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z]/g,"");
@@ -742,8 +744,8 @@ async function loadReservations() {
 }
 
 function ouvrirModif(r) {
-  currentModifId = r["ID"]; currentModifMat = r["Matériel"] || r["Materiel"] || "[]";
-  document.getElementById("mo-modif-id").textContent = (r["ID"]||"")+" - "+(r["Camp"]||"");
+  currentModifId = resId(r); currentModifMat = r["Matériel"] || r["Materiel"] || "[]";
+  document.getElementById("mo-modif-id").textContent = (resId(r)||"")+" - "+(r["Camp"]||"");
   document.getElementById("modif-camp").value = r["Camp"] || "";
   document.getElementById("modif-dir").value = r["Directeur"] || "";
   document.getElementById("modif-dep").value = formatDateInput(r["Dates départ"] || r["Dates depart"] || "");
@@ -799,8 +801,8 @@ async function loadDeparts() {
       card.innerHTML = "<div class=\"dc-hd\">"
         +"<div><div class=\"dc-ttl\">"+(r["Camp"]||"")+" - "+(r["Directeur"]||"")+"</div>"
         +"<div class=\"dc-meta\">Depart le "+(r["Dates départ"]||r["Dates depart"]||"?")+" - Retour le "+(r["Date retour"]||"?")+"</div></div>"
-        +"<span id=\"prog-lbl-"+r["ID"]+"\" style=\"font-size:13px;color:#7a9a80\">0 / "+total+" verifie(s)</span></div>"
-        +"<div class=\"dp\"><div class=\"dpb\" id=\"prog-bar-"+r["ID"]+"\" style=\"width:0%\"></div></div>";
+        +"<span id=\"prog-lbl-"+resId(r)+"\" style=\"font-size:13px;color:#7a9a80\">0 / "+total+" verifie(s)</span></div>"
+        +"<div class=\"dp\"><div class=\"dpb\" id=\"prog-bar-"+resId(r)+"\" style=\"width:0%\"></div></div>";
 
       materiel.forEach(function(m, idx) {
         var loc = itemsData.find(function(i){ return i.ref === m.ref; });
@@ -847,7 +849,7 @@ async function loadDeparts() {
             if (e.target.type === "checkbox" || e.target.tagName === "BUTTON" || e.target.tagName === "INPUT") return;
             ck.checked = !ck.checked; ck.dispatchEvent(new Event("change"));
           });
-        })(r["ID"], total, dck, di, inp, maxQty, bm, bp);
+        })(resId(r), total, dck, di, inp, maxQty, bm, bp);
 
         qtyWrap.appendChild(bm); qtyWrap.appendChild(inp); qtyWrap.appendChild(bp); qtyWrap.appendChild(mx);
         di.appendChild(dck); di.appendChild(nd); di.appendChild(qtyWrap);
@@ -856,7 +858,7 @@ async function loadDeparts() {
 
       var footer = document.createElement("div"); footer.style.cssText = "padding:12px 20px;border-top:1px solid #e8f0ea;display:flex;justify-content:flex-end";
       var fbtn = document.createElement("button"); fbtn.className = "btn btn-p btn-sm"; fbtn.textContent = "Confirmer le depart";
-      (function(rid, fb, c) { fb.addEventListener("click", function(){ confirmerDepart(rid, fb, c); }); })(r["ID"], fbtn, card);
+      (function(rid, fb, c) { fb.addEventListener("click", function(){ confirmerDepart(rid, fb, c); }); })(resId(r), fbtn, card);
       footer.appendChild(fbtn); card.appendChild(footer);
       container.appendChild(card);
     });
@@ -909,12 +911,12 @@ async function loadRetours() {
       var retDate = parseDateFR(r["Date retour"]), enRetard = retDate < today;
       var card = document.createElement("div"); card.className = "rc-card";
       card.dataset.camp = r["Camp"]; card.dataset.dir = r["Directeur"];
-      var succId = "succ-"+r["ID"];
+      var succId = "succ-"+resId(r);
       card.innerHTML = "<div class=\"rc-hd\">"
         +"<div><div class=\"rc-ttl\">"+(r["Camp"]||"")+" - "+(r["Directeur"]||"")+"</div>"
         +"<div class=\"rc-meta\">Parti le "+(r["Dates départ"]||r["Dates depart"]||"")+" - Retour prevu "+(r["Date retour"]||"")+(enRetard?" <strong style='color:#D94F3D'>EN RETARD</strong>":"")+"</div></div>"
         +"<div style=\"display:flex;gap:8px;align-items:center\"><span class=\"rc-suc\" id=\""+succId+"\">Enregistre !</span>"
-        +"<button class=\"btn btn-p btn-sm\" id=\"btn-ret-"+r["ID"]+"\">Valider le retour</button></div></div>";
+        +"<button class=\"btn btn-p btn-sm\" id=\"btn-ret-"+resId(r)+"\">Valider le retour</button></div></div>";
 
       materiel.forEach(function(m, idx) {
         var loc = itemsData.find(function(i){ return i.ref === m.ref; }); var isC = loc && loc.type === "caisse";
@@ -922,15 +924,15 @@ async function loadRetours() {
         var art = document.createElement("div"); art.className = "ra";
         art.innerHTML = "<div class=\"ra-name\">"+(!isC?'<span class="ref">'+m.ref+"</span> ":"")+m.nom+(!isC&&m.qty>1?" (x"+m.qty+" partis)":"")+"</div>"
           +"<div class=\"rfs\">"
-          +(!isC?"<div class=\"rf\" style=\"max-width:100px\"><label>Qte retournee</label><input type=\"number\" id=\"qte-"+r["ID"]+"-"+idx+"\" value=\""+m.qty+"\" min=\"0\" max=\""+m.qty+"\"></div>":"")
-          +"<div class=\"rf\" style=\"max-width:200px\"><label>Etat</label><select id=\"etat-"+r["ID"]+"-"+idx+"\">"
+          +(!isC?"<div class=\"rf\" style=\"max-width:100px\"><label>Qte retournee</label><input type=\"number\" id=\"qte-"+resId(r)+"-"+idx+"\" value=\""+m.qty+"\" min=\"0\" max=\""+m.qty+"\"></div>":"")
+          +"<div class=\"rf\" style=\"max-width:200px\"><label>Etat</label><select id=\"etat-"+resId(r)+"-"+idx+"\">"
           +"<option>Bon etat</option><option>Usure legere</option><option>A reparer</option><option>Hors service</option>"+(isC?"<option>Incomplete</option>":"")+"</select></div>"
-          +"<div class=\"rf\"><label>Observations</label><input type=\"text\" id=\"obs-"+r["ID"]+"-"+idx+"\" placeholder=\"Casse, manque...\"></div></div>";
+          +"<div class=\"rf\"><label>Observations</label><input type=\"text\" id=\"obs-"+resId(r)+"-"+idx+"\" placeholder=\"Casse, manque...\"></div></div>";
         card.appendChild(art);
       });
       container.appendChild(card);
-      var btnRet = document.getElementById("btn-ret-"+r["ID"]);
-      if (btnRet) { (function(rid, mat, c){ btnRet.addEventListener("click", function(){ validerRetour(rid, mat, c, this); }); })(r["ID"], materiel, card); }
+      var btnRet = document.getElementById("btn-ret-"+resId(r));
+      if (btnRet) { (function(rid, mat, c){ btnRet.addEventListener("click", function(){ validerRetour(rid, mat, c, this); }); })(resId(r), materiel, card); }
     });
   } catch(e) { container.innerHTML = '<div style="padding:20px;color:#c07060;font-size:13px;text-align:center">Erreur de chargement.</div>'; }
 }
